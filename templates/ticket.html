@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Welcome to TCI Indian Community 
-        Your Tambola Ticket</title>
+    <title>Your Tambola Ticket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
@@ -15,7 +14,7 @@
             min-height: 100vh;
             margin: 0;
         }
-       .ticket-container {
+        .ticket-container {
     background: 
         /* Your custom watermark/logo */
         url("{{ url_for('static', filename='tambola-logo.png') }}"),
@@ -25,10 +24,9 @@
         linear-gradient(225deg, transparent 95%, #e74c3c 95%),
         linear-gradient(315deg, transparent 95%, #e74c3c 95%),
         /* Main background */
-        linear-gradient(135deg, #fff5f5 0%, #fff 50%, #f0f8ff 100%);
-    background-size: 180px 180px, 20px 20px, 20px 20px, 20px 20px, 20px 20px, cover;
-    background-repeat: no-repeat;
-    background-position: center;
+             url("{{ url_for('static', filename='ticket-bg.jpg') }}"),
+        linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.95) 100%);
+    background-size: cover, cover;
     background-blend-mode: overlay;
     border: 3px solid #e74c3c;
     border-radius: 15px;
@@ -39,7 +37,8 @@
     position: relative;
     overflow: hidden;
     opacity: 0.95;
-}     
+}
+        
         /* Decorative corners */
         .ticket-container::before,
         .ticket-container::after {
@@ -103,6 +102,7 @@
             position: relative;
             transition: all 0.3s ease;
             background: white;
+            cursor: pointer;
         }
         .tambola-ticket td.number {
             background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
@@ -112,9 +112,15 @@
         .tambola-ticket td.number:hover {
             background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
             color: white;
-            transform: scale(1.1);
+            transform: scale(1.05);
             z-index: 3;
-            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        .tambola-ticket td.number.selected {
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%) !important;
+            color: white !important;
+            transform: scale(1.1);
+            z-index: 4;
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
         }
         .tambola-ticket td.empty {
             background: 
@@ -126,6 +132,7 @@
                     #f8f9fa 10px
                 );
             position: relative;
+            cursor: not-allowed;
         }
         .tambola-ticket td.empty::after {
             content: '×';
@@ -156,6 +163,9 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
         }
+        .btn-secondary {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+        }
         
         .instructions {
             background: linear-gradient(135deg, #e8f4f8 0%, #d1f2eb 100%);
@@ -183,17 +193,39 @@
             color: #2c3e50;
         }
         
+        .counter-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
         .ticket-count {
             background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
             color: white;
-            padding: 10px 20px;
+            padding: 12px 25px;
             border-radius: 25px;
             font-weight: 700;
             display: inline-block;
-            margin: 15px 0;
             box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
             position: relative;
             z-index: 2;
+            font-size: 18px;
+        }
+        .progress-bar {
+            width: 150px;
+            height: 20px;
+            background: #ecf0f1;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+            border-radius: 10px;
+            transition: width 0.3s ease;
+            width: 0%;
         }
         
         .ticket-footer {
@@ -216,10 +248,9 @@
                 margin: 0 !important;
                 max-width: none !important;
             }
-            .tambola-ticket td.number:hover {
-                transform: none !important;
-                background: white !important;
-                color: #000 !important;
+            .tambola-ticket td.number.selected {
+                background: #27ae60 !important;
+                color: white !important;
             }
         }
         
@@ -237,6 +268,10 @@
             }
             .player-info h2 {
                 font-size: 18px;
+            }
+            .counter-container {
+                flex-direction: column;
+                gap: 10px;
             }
         }
         
@@ -260,29 +295,37 @@
 <body>
     <div class="ticket-container">
         <div class="player-info">
-    <h1>Welcome To TCI Indian Community Diwali Party 🎫 TAMBOLA TICKET</h1>
-    <h2>Player: {{ user_name }}</h2>
-    {% if ticket_code %}
-    <div style="margin-top: 10px; background: rgba(52, 152, 219, 0.2); padding: 8px 15px; border-radius: 20px; display: inline-block;">
-        <strong>Ticket Code: </strong>
-        <span style="font-family: monospace; font-size: 18px; font-weight: bold; letter-spacing: 2px; color: #3498db;">
-            {{ ticket_code }}
-        </span>
-    </div>
-    <p style="margin: 5px 0 0 0; font-size: 12px; opacity: 0.8;">
-        📝 Save this code to recover your ticket later
-    </p>
-    {% endif %}
-</div>
+            <h1>🎫 TAMBOLA TICKET</h1>
+            <h2>Player: {{ user_name }}</h2>
+            {% if ticket_code %}
+            <div style="margin-top: 10px; background: rgba(52, 152, 219, 0.2); padding: 8px 15px; border-radius: 20px; display: inline-block;">
+                <strong>Ticket Code: </strong>
+                <span style="font-family: monospace; font-size: 18px; font-weight: bold; letter-spacing: 2px; color: #3498db;">
+                    {{ ticket_code }}
+                </span>
+            </div>
+            <p style="margin: 5px 0 0 0; font-size: 12px; opacity: 0.8;">
+                📝 Save this code to recover your ticket later
+            </p>
+            {% endif %}
+        </div>
         
         {% if ticket %}
-        <div class="ticket-count">🎯 Numbers: {{ total_numbers }}/15</div>
+        <div class="counter-container">
+            <div class="ticket-count">
+                🎯 <span id="selectedCount">0</span>/<span id="totalCount">15</span> Numbers
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+        </div>
         
         <table class="tambola-ticket">
             {% for row in ticket %}
             <tr>
                 {% for number in row %}
-                <td class="{% if number == 0 %}empty{% else %}number{% endif %}">
+                <td class="{% if number == 0 %}empty{% else %}number{% endif %}" 
+                    {% if number != 0 %}data-number="{{ number }}"{% endif %}>
                     {% if number != 0 %}{{ number }}{% endif %}
                 </td>
                 {% endfor %}
@@ -298,9 +341,10 @@
         {% endif %}
         
         <div class="no-print">
-    <button onclick="window.print()" class="btn">🖨️ Print Ticket</button>
-    <a href="/recover" class="btn">🔍 Recover Ticket</a>
-    <a href="/" class="btn">🏠 Home</a>
+            <button onclick="window.print()" class="btn">🖨️ Print Ticket</button>
+            <button onclick="clearSelection()" class="btn btn-secondary">🔄 Clear All</button>
+            <a href="/recover" class="btn">🔍 Recover Ticket</a>
+            <a href="/" class="btn">🏠 Home</a>
         </div>
         
         <div class="instructions">
@@ -310,10 +354,11 @@
                 <li><strong>Top Line:</strong> Complete first row</li>
                 <li><strong>Middle Line:</strong> Complete second row</li>
                 <li><strong>Bottom Line:</strong> Complete third row</li>
+                <li><strong>Four Corners:</strong> Four corner numbers</li>
                 <li><strong>Full House:</strong> All 15 numbers</li>
             </ul>
             <p style="text-align: center; margin-top: 10px; font-weight: 600;">
-                🎊 <strong>Mark numbers as they are called!</strong> 🎊
+                🎊 <strong>Click numbers to mark them as called!</strong> 🎊
             </p>
         </div>
         
@@ -323,19 +368,78 @@
     </div>
 
     <script>
-        // Add click effect on numbers
+        let selectedNumbers = new Set();
+        const totalNumbers = 15;
+
+        // Load saved selection from localStorage
+        function loadSelection() {
+            const saved = localStorage.getItem('ticketSelection_{{ ticket_code }}');
+            if (saved) {
+                selectedNumbers = new Set(JSON.parse(saved));
+                updateDisplay();
+            }
+        }
+
+        // Save selection to localStorage
+        function saveSelection() {
+            localStorage.setItem('ticketSelection_{{ ticket_code }}', JSON.stringify([...selectedNumbers]));
+        }
+
+        // Update counter and progress bar
+        function updateDisplay() {
+            const selectedCount = selectedNumbers.size;
+            document.getElementById('selectedCount').textContent = selectedCount;
+            document.getElementById('totalCount').textContent = totalNumbers;
+            
+            const progressPercent = (selectedCount / totalNumbers) * 100;
+            document.getElementById('progressFill').style.width = progressPercent + '%';
+            
+            // Update visual selection
+            document.querySelectorAll('.tambola-ticket td.number').forEach(cell => {
+                const number = parseInt(cell.getAttribute('data-number'));
+                if (selectedNumbers.has(number)) {
+                    cell.classList.add('selected');
+                } else {
+                    cell.classList.remove('selected');
+                }
+            });
+        }
+
+        // Clear all selections
+        function clearSelection() {
+            if (confirm('Are you sure you want to clear all marked numbers?')) {
+                selectedNumbers.clear();
+                saveSelection();
+                updateDisplay();
+            }
+        }
+
+        // Initialize
         document.addEventListener('DOMContentLoaded', function() {
-            const numberCells = document.querySelectorAll('.tambola-ticket td.number');
-            numberCells.forEach(cell => {
+            loadSelection();
+            
+            // Add click event to number cells
+            document.querySelectorAll('.tambola-ticket td.number').forEach(cell => {
                 cell.addEventListener('click', function() {
-                    this.style.backgroundColor = '#f39c12';
-                    this.style.color = 'white';
-                    this.style.transform = 'scale(0.95)';
-                    setTimeout(() => {
-                        this.style.transform = 'scale(1.1)';
-                    }, 150);
+                    const number = parseInt(this.getAttribute('data-number'));
+                    
+                    if (selectedNumbers.has(number)) {
+                        selectedNumbers.delete(number);
+                    } else {
+                        selectedNumbers.add(number);
+                    }
+                    
+                    saveSelection();
+                    updateDisplay();
                 });
             });
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                clearSelection();
+            }
         });
     </script>
 </body>
