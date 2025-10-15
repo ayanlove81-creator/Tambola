@@ -10,6 +10,7 @@ import secrets
 import string
 from datetime import datetime
 from flask import Flask, render_template, request, session, redirect, url_for
+from flask import send_from_directory
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-key-123')
@@ -195,7 +196,11 @@ def index():
     qr_code = generate_qr(qr_url)
     
     return render_template('index.html', qr_code=qr_code, qr_url=qr_url)
-
+    
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    return send_from_directory('static', filename)
+    
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if 'device_id' not in session:
