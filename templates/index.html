@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambola Ticket Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Tambola Ticket Generator</h1>
+        <div class="qr-section">
+            <h2>Scan QR Code to Get Your Ticket</h2>
+            <img src="data:image/png;base64,{{ qr_code }}" alt="Scan QR Code" class="qr-code">
+            <p>Or click the button below:</p>
+            <a href="{{ qr_url }}" class="btn">Get Your Ticket</a>
+        </div>
+        <div class="instructions">
+            <h3>Instructions:</h3>
+            <ul>
+                <li>Scan the QR code with your phone</li>
+                <li>Enter your name to register</li>
+                <li>Get your unique Tambola ticket</li>
+                <li>One ticket per device</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

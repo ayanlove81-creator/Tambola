@@ -1,0 +1,13 @@
+tambola_app/
+├── app.py
+├── database.py
+├── requirements.txt
+├── runtime.txt
+├── Procfile
+├── templates/
+│   ├── index.html
+│   ├── register.html
+│   ├── ticket.html
+│   └── admin.html
+└── static/
+    └── style.css

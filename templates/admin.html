@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin - Tambola</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>Admin Panel - Registered Players</h1>
+        <div class="stats">
+            <p>Total Players: {{ users|length }}</p>
+        </div>
+        
+        <div class="players-list">
+            {% for user in users %}
+            <div class="player-card">
+                <h3>{{ user.name }}</h3>
+                <p><strong>Device ID:</strong> {{ user.device_id }}</p>
+                <p><strong>Registered:</strong> {{ user.created_at }}</p>
+                <div class="ticket-preview">
+                    <table class="tambola-ticket small">
+                        {% for row in user.ticket %}
+                        <tr>
+                            {% for number in row %}
+                            <td class="{% if number == 0 %}empty{% else %}number{% endif %}">
+                                {% if number != 0 %}{{ number }}{% endif %}
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <a href="{{ url_for('index') }}" class="btn">Back to Home</a>
+    </div>
+</body>
+</html>

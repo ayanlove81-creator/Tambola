@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Tambola Ticket</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1>🎫 Your Tambola Ticket</h1>
+        <div class="player-info">
+            <h2>Player: {{ user_name }}</h2>
+        </div>
+        
+        <div class="ticket">
+            <table class="tambola-ticket">
+                {% for row in ticket %}
+                <tr>
+                    {% for number in row %}
+                    <td class="{% if number == 0 %}empty{% else %}number{% endif %}">
+                        {% if number != 0 %}{{ number }}{% endif %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        
+        <div class="actions">
+            <button onclick="window.print()" class="btn">Print Ticket</button>
+            <a href="{{ url_for('index') }}" class="btn secondary">Home</a>
+        </div>
+        
+        <div class="instructions">
+            <h3>How to Play:</h3>
+            <ul>
+                <li>Mark numbers as they are called</li>
+                <li>First to complete a row wins!</li>
+                <li>Keep this ticket safe</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>
