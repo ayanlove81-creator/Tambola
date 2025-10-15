@@ -1,96 +1,256 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
-    <title>WELCOME To TCI INDIAN COMMUNITY DIWALI PARTYt</title>
-    <title>Your Tambola Ticket</title>
+    <title>Welcome to TCI Indian Community 
+        Your Tambola Ticket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+        
         body { 
-            font-family: Arial, sans-serif; 
+            font-family: 'Poppins', Arial, sans-serif; 
             text-align: center; 
             padding: 20px;
-            background: #f0f8ff;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
         }
         .ticket-container {
-            background: white;
-            border: 3px solid #2c3e50;
-            border-radius: 10px;
-            padding: 20px;
+            background: 
+                /* Watermark background */
+                url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23f8f9fa' fill-opacity='0.1' d='M100,20 C133.137,20 160,46.863 160,80 C160,113.137 133.137,140 100,140 C66.863,140 40,113.137 40,80 C40,46.863 66.863,20 100,20 Z M100,30 C72.386,30 50,52.386 50,80 C50,107.614 72.386,130 100,130 C127.614,130 150,107.614 150,80 C150,52.386 127.614,30 100,30 Z'/%3E%3C/svg%3E"),
+                /* Border pattern */
+                linear-gradient(45deg, transparent 95%, #e74c3c 95%),
+                linear-gradient(135deg, transparent 95%, #e74c3c 95%),
+                linear-gradient(225deg, transparent 95%, #e74c3c 95%),
+                linear-gradient(315deg, transparent 95%, #e74c3c 95%),
+                /* Main background */
+                linear-gradient(135deg, #fff5f5 0%, #fff 50%, #f0f8ff 100%);
+            background-size: 100px 100px, 20px 20px, 20px 20px, 20px 20px, 20px 20px, cover;
+            border: 3px solid #e74c3c;
+            border-radius: 15px;
+            padding: 25px;
             margin: 20px auto;
-            max-width: 500px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            max-width: 550px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
         }
+        
+        /* Decorative corners */
+        .ticket-container::before,
+        .ticket-container::after {
+            content: '';
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 50%;
+            z-index: 1;
+        }
+        .ticket-container::before {
+            top: -15px;
+            left: -15px;
+        }
+        .ticket-container::after {
+            bottom: -15px;
+            right: -15px;
+        }
+        
         .player-info {
-            background: #2c3e50;
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             color: white;
-            padding: 15px;
-            border-radius: 5px;
-            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
+        .player-info h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 700;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .player-info h2 {
+            margin: 10px 0 0 0;
+            font-size: 20px;
+            font-weight: 600;
+            color: #3498db;
+        }
+        
         .tambola-ticket {
             border-collapse: collapse;
-            margin: 20px auto;
-            background: white;
-            border: 2px solid #2c3e50;
+            margin: 25px auto;
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px solid #2c3e50;
+            border-radius: 10px;
             width: 100%;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 2;
         }
         .tambola-ticket td {
             width: 11%;
-            height: 50px;
+            height: 55px;
             border: 2px solid #34495e;
             text-align: center;
-            font-weight: bold;
+            font-weight: 700;
             font-size: 18px;
             position: relative;
+            transition: all 0.3s ease;
+            background: white;
         }
         .tambola-ticket td.number {
-            background: #fff;
+            background: linear-gradient(135deg, #fff 0%, #f8f9fa 100%);
             color: #2c3e50;
+            position: relative;
+        }
+        .tambola-ticket td.number:hover {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            transform: scale(1.1);
+            z-index: 3;
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
         }
         .tambola-ticket td.empty {
-            background: #ecf0f1;
+            background: 
+                repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 5px,
+                    #f8f9fa 5px,
+                    #f8f9fa 10px
+                );
+            position: relative;
         }
+        .tambola-ticket td.empty::after {
+            content: '×';
+            color: #bdc3c7;
+            font-size: 20px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        
         .btn {
-            background: #3498db;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
             color: white;
-            padding: 12px 24px;
+            padding: 12px 25px;
             text-decoration: none;
             border: none;
-            border-radius: 5px;
+            border-radius: 25px;
             margin: 10px;
             cursor: pointer;
             display: inline-block;
             font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
         }
         .btn:hover {
-            background: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
         }
+        
         .instructions {
-            background: #e8f4f8;
-            padding: 15px;
-            border-radius: 5px;
-            margin-top: 20px;
+            background: linear-gradient(135deg, #e8f4f8 0%, #d1f2eb 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 25px;
             text-align: left;
+            border-left: 5px solid #3498db;
+            position: relative;
+            z-index: 2;
         }
+        .instructions h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            text-align: center;
+            font-weight: 700;
+        }
+        .instructions ul {
+            padding-left: 20px;
+            margin: 0;
+        }
+        .instructions li {
+            margin-bottom: 8px;
+            line-height: 1.5;
+            color: #2c3e50;
+        }
+        
         .ticket-count {
-            background: #27ae60;
+            background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
             color: white;
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-weight: bold;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: 700;
             display: inline-block;
-            margin: 10px 0;
+            margin: 15px 0;
+            box-shadow: 0 4px 15px rgba(39, 174, 96, 0.3);
+            position: relative;
+            z-index: 2;
         }
+        
+        .ticket-footer {
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 2px dashed #bdc3c7;
+            color: #7f8c8d;
+            font-size: 14px;
+        }
+        
         @media print {
             .no-print { display: none; }
-            body { background: white; }
-            .ticket-container { border: none; box-shadow: none; }
-        }
-        @media (max-width: 600px) {
-            .tambola-ticket td {
-                height: 40px;
-                font-size: 14px;
+            body { 
+                background: white !important;
+                padding: 0;
             }
+            .ticket-container { 
+                border: 2px solid #000 !important; 
+                box-shadow: none !important;
+                margin: 0 !important;
+                max-width: none !important;
+            }
+            .tambola-ticket td.number:hover {
+                transform: none !important;
+                background: white !important;
+                color: #000 !important;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .ticket-container {
+                padding: 15px;
+                margin: 10px;
+            }
+            .tambola-ticket td {
+                height: 45px;
+                font-size: 16px;
+            }
+            .player-info h1 {
+                font-size: 20px;
+            }
+            .player-info h2 {
+                font-size: 18px;
+            }
+        }
+        
+        /* Animation for ticket appearance */
+        @keyframes ticketAppear {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .ticket-container {
+            animation: ticketAppear 0.6s ease-out;
         }
     </style>
 </head>
@@ -102,7 +262,7 @@
         </div>
         
         {% if ticket %}
-        <div class="ticket-count">Numbers: {{ total_numbers }}/15</div>
+        <div class="ticket-count">🎯 Numbers: {{ total_numbers }}/15</div>
         
         <table class="tambola-ticket">
             {% for row in ticket %}
@@ -116,7 +276,7 @@
             {% endfor %}
         </table>
         {% else %}
-        <div style="color: red; padding: 20px;">
+        <div style="color: #e74c3c; padding: 20px; background: #fadbd8; border-radius: 10px;">
             <h3>❌ Error: No ticket data found</h3>
             <p>Please go back and register again.</p>
             <a href="/register" class="btn">Register Again</a>
@@ -135,10 +295,34 @@
                 <li><strong>Top Line:</strong> Complete first row</li>
                 <li><strong>Middle Line:</strong> Complete second row</li>
                 <li><strong>Bottom Line:</strong> Complete third row</li>
+                <li><strong>Four Corners:</strong> Four corner numbers</li>
                 <li><strong>Full House:</strong> All 15 numbers</li>
             </ul>
-            <p><strong>Mark numbers as they are called!</strong></p>
+            <p style="text-align: center; margin-top: 10px; font-weight: 600;">
+                🎊 <strong>Mark numbers as they are called!</strong> 🎊
+            </p>
+        </div>
+        
+        <div class="ticket-footer">
+            <p>Generated on: {{ now.strftime('%Y-%m-%d %H:%M') if now else '' }} | Ticket ID: {{ session.device_id[:8] if session.device_id else '' }}</p>
         </div>
     </div>
+
+    <script>
+        // Add click effect on numbers
+        document.addEventListener('DOMContentLoaded', function() {
+            const numberCells = document.querySelectorAll('.tambola-ticket td.number');
+            numberCells.forEach(cell => {
+                cell.addEventListener('click', function() {
+                    this.style.backgroundColor = '#f39c12';
+                    this.style.color = 'white';
+                    this.style.transform = 'scale(0.95)';
+                    setTimeout(() => {
+                        this.style.transform = 'scale(1.1)';
+                    }, 150);
+                });
+            });
+        });
+    </script>
 </body>
 </html>
