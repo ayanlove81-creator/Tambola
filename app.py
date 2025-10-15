@@ -215,7 +215,7 @@ def register():
             return render_template('register.html', error='Please enter your name')
     
     db.close()
-    return render_template('register.html')
+    return render_template('register.html')  # This renders the registration form
 
 @app.route('/ticket')
 def show_ticket():
