@@ -1,45 +1,129 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
+    <title>Register for Tambola</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Tambola Ticket</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .register-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+        }
+        input[type="text"]:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        .btn {
+            background: #3498db;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s;
+        }
+        .btn:hover {
+            background: #2980b9;
+        }
+        .error {
+            background: #e74c3c;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .note {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+        .home-link {
+            display: inline-block;
+            margin-top: 20px;
+            color: #3498db;
+            text-decoration: none;
+        }
+        .home-link:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🎫 Your Tambola Ticket</h1>
-        <div class="player-info">
-            <h2>Player: {{ user_name }}</h2>
-        </div>
+    <div class="register-container">
+        <h1>🎫 Register for Tambola</h1>
+        <p class="subtitle">Enter your name to get your unique ticket</p>
         
-        <div class="ticket">
-            <table class="tambola-ticket">
-                {% for row in ticket %}
-                <tr>
-                    {% for number in row %}
-                    <td class="{% if number == 0 %}empty{% else %}number{% endif %}">
-                        {% if number != 0 %}{{ number }}{% endif %}
-                    </td>
-                    {% endfor %}
-                </tr>
-                {% endfor %}
-            </table>
+        {% if error %}
+        <div class="error">
+            {{ error }}
         </div>
+        {% endif %}
         
-        <div class="actions">
-            <button onclick="window.print()" class="btn">Print Ticket</button>
-            <a href="{{ url_for('index') }}" class="btn secondary">Home</a>
-        </div>
+        <form method="POST" action="/register">
+            <div class="form-group">
+                <label for="name">Your Name:</label>
+                <input type="text" id="name" name="name" placeholder="Enter your full name" required autofocus>
+            </div>
+            
+            <button type="submit" class="btn">Generate My Ticket 🎯</button>
+        </form>
         
-        <div class="instructions">
-            <h3>How to Play:</h3>
-            <ul>
-                <li>Mark numbers as they are called</li>
-                <li>First to complete a row wins!</li>
-                <li>Keep this ticket safe</li>
+        <div class="note">
+            <strong>📝 Important:</strong>
+            <ul style="text-align: left; padding-left: 20px;">
+                <li>Only one ticket per device</li>
+                <li>Your ticket will be unique</li>
+                <li>Save/print your ticket for the game</li>
             </ul>
         </div>
+        
+        <a href="/" class="home-link">← Back to Home</a>
     </div>
 </body>
 </html>
