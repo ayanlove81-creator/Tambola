@@ -38,7 +38,35 @@ def get_db():
     conn = sqlite3.connect(get_db_path())
     conn.row_factory = sqlite3.Row
     return conn
-
+    
+@app.route('/ticket')
+def show_ticket():
+    if 'device_id' not in session:
+        return redirect('/')
+    
+    db = get_db()
+    user = db.execute('SELECT * FROM users WHERE device_id = ?', [session['device_id']]).fetchone()
+    db.close()
+    
+    if not user:
+        return redirect('/register')
+    
+    try:
+        ticket = json.loads(user['ticket_data'])
+        total_numbers = count_ticket_numbers(ticket)
+        
+        # Pass current time for the ticket footer
+        current_time = datetime.now()
+        
+        return render_template('ticket.html', 
+                             ticket=ticket, 
+                             user_name=user['name'], 
+                             total_numbers=total_numbers,
+                             now=current_time)
+    except Exception as e:
+        print(f"Error loading ticket: {e}")
+        return "Error loading ticket. Please register again."
+        
 def generate_tambola_ticket():
     """
     Generate proper Tambola ticket with exactly 15 numbers
