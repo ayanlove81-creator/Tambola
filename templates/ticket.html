@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>🎆✨ Magical Diwali ✨🎆 - Tambola Ticket</title>
+    <title>🎆✨ Happy Diwali ✨🎆 TCI Indian Community- Tambola Ticket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
@@ -482,7 +482,7 @@
 <body>
     <!-- Disney-style Celebration Overlay -->
     <div id="disneyCelebration" class="disney-celebration">
-        <div class="disney-text">🎪 MAGICAL FULL HOUSE! 🎪</div>
+        <div class="disney-text">🎪 Diwali FULL HOUSE! 🎪</div>
         <div style="color: white; font-size: 24px; margin-top: 20px; text-shadow: 0 0 10px gold;">
             Congratulations! You've completed the magical journey!
         </div>
@@ -495,7 +495,7 @@
         <div class="player-info">
             <h1>
                 <span class="diya-title">🎆</span>
-                ✨ Magical Diwali ✨
+                ✨ Happy Diwali TCI Indian Community ✨
                 <span class="diya-title">🎆</span>
             </h1>
             <h2>Player: {{ user_name }}</h2>
@@ -556,7 +556,6 @@
                 <li><strong>Top Line:</strong> Complete first row</li>
                 <li><strong>Middle Line:</strong> Complete second row</li>
                 <li><strong>Bottom Line:</strong> Complete third row</li>
-                <li><strong>Four Corners:</strong> Four corner numbers</li>
                 <li><strong>Full House:</strong> All 15 numbers</li>
             </ul>
             <p style="text-align: center; margin-top: 10px; font-weight: 600; color: #8a2be2;">
@@ -565,7 +564,7 @@
         </div>
         
         <div class="ticket-footer">
-            <p>Generated on: {{ now.strftime('%Y-%m-%d %H:%M') if now else '' }} | Ticket ID: {{ session.device_id[:8] if session.device_id else '' }}</p>
+            <p>Created by Ayavue Enterprise & all copied Right with Ayavue Enterprice :- Generated on: {{ now.strftime('%Y-%m-%d %H:%M') if now else '' }} | Ticket ID: {{ session.device_id[:8] if session.device_id else '' }}</p>
         </div>
     </div>
 
@@ -830,8 +829,8 @@
         let titleBlink = true;
         setInterval(() => {
             document.title = titleBlink ? 
-                "🎆✨ Magical Diwali ✨🎆 - Tambola Ticket" : 
-                "✨ Magical Diwali ✨ - Tambola Ticket";
+                "🎆✨ Happy Diwali ✨🎆 TCI Indian Community - Tambola Ticket" : 
+                "✨ Happy Diwali ✨ TCI Indian Community - Tambola Ticket";
             titleBlink = !titleBlink;
         }, 1000);
     </script>
