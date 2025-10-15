@@ -81,10 +81,35 @@ def generate_tambola_ticket():
     for row in range(3):
         non_zero = [i for i, num in enumerate(ticket[row]) if num != 0]
         if len(non_zero) > 5:
-            # Remove extra numbers
-            to_remove = random.sample(non_zero, len(non_zero) - 5)
+            # Remove extra numbers, but ensure no column becomes empty
+            to_remove = []
+            potential_removals = non_zero.copy()
+            
+            for col in potential_removals:
+                # Check if removing this number would make its column empty
+                numbers_in_col = sum(1 for r in range(3) if ticket[r][col] != 0)
+                if numbers_in_col > 1:  # Can safely remove if column has other numbers
+                    to_remove.append(col)
+                    if len(to_remove) == len(non_zero) - 5:
+                        break
+            
+            # If we couldn't find enough safe removals, force remove from columns with most numbers
+            if len(to_remove) < len(non_zero) - 5:
+                # Sort columns by number count (descending) and remove from those with most numbers
+                col_counts = []
+                for col in non_zero:
+                    if col not in to_remove:
+                        count = sum(1 for r in range(3) if ticket[r][col] != 0)
+                        col_counts.append((col, count))
+                
+                col_counts.sort(key=lambda x: x[1], reverse=True)
+                remaining_needed = (len(non_zero) - 5) - len(to_remove)
+                for col, count in col_counts[:remaining_needed]:
+                    to_remove.append(col)
+            
             for col in to_remove:
                 ticket[row][col] = 0
+                
         elif len(non_zero) < 5:
             # Add numbers if needed
             zero_cols = [i for i in range(9) if ticket[row][i] == 0]
@@ -100,11 +125,152 @@ def generate_tambola_ticket():
                     end_num = 90
                 
                 # Find a unique number for this column
-                existing_numbers = [ticket[r][col] for r in range(3)]
+                existing_numbers = [ticket[r][col] for r in range(3) if ticket[r][col] != 0]
                 available_numbers = [n for n in range(start_num, end_num + 1) 
                                    if n not in existing_numbers]
                 if available_numbers:
                     ticket[row][col] = random.choice(available_numbers)
+    
+    # Final verification: Ensure no empty columns and exactly 5 numbers per row
+    return verify_and_fix_ticket(ticket)
+
+def verify_and_fix_ticket(ticket):
+    """Verify the ticket and fix any issues"""
+    max_attempts = 10
+    for attempt in range(max_attempts):
+        # Check for empty columns
+        empty_columns = []
+        for col in range(9):
+            if all(ticket[row][col] == 0 for row in range(3)):
+                empty_columns.append(col)
+        
+        # Check row counts
+        row_counts = [sum(1 for num in row if num != 0) for row in ticket]
+        
+        # If no empty columns and all rows have 5 numbers, we're good
+        if not empty_columns and all(count == 5 for count in row_counts):
+            return ticket
+        
+        # Fix empty columns
+        for col in empty_columns:
+            fill_empty_column(ticket, col)
+        
+        # Fix row counts
+        for row in range(3):
+            current_count = sum(1 for num in ticket[row] if num != 0)
+            if current_count != 5:
+                fix_row_count(ticket, row)
+        
+        # If we've tried enough times, use fallback
+        if attempt == max_attempts - 1:
+            return generate_tambola_ticket_fallback()
+    
+    return ticket
+
+def fill_empty_column(ticket, col):
+    """Fill an empty column with at least one number"""
+    start_num = col * 10 + 1
+    end_num = start_num + 9
+    if col == 0:
+        start_num = 1
+        end_num = 9
+    elif col == 8:
+        start_num = 80
+        end_num = 90
+    
+    available_numbers = list(range(start_num, end_num + 1))
+    random.shuffle(available_numbers)
+    
+    # Find a row that can accept a new number (has less than 5 numbers)
+    available_rows = []
+    for row in range(3):
+        if sum(1 for num in ticket[row] if num != 0) < 5:
+            available_rows.append(row)
+    
+    if available_rows and available_numbers:
+        row = random.choice(available_rows)
+        ticket[row][col] = available_numbers[0]
+
+def fix_row_count(ticket, row):
+    """Fix a row to have exactly 5 numbers"""
+    current_count = sum(1 for num in ticket[row] if num != 0)
+    
+    if current_count > 5:
+        # Remove extra numbers
+        non_zero_cols = [col for col in range(9) if ticket[row][col] != 0]
+        to_remove = random.sample(non_zero_cols, current_count - 5)
+        for col in to_remove:
+            # Only remove if column won't become empty
+            if sum(1 for r in range(3) if ticket[r][col] != 0) > 1:
+                ticket[row][col] = 0
+    
+    elif current_count < 5:
+        # Add numbers
+        zero_cols = [col for col in range(9) if ticket[row][col] == 0]
+        to_add = random.sample(zero_cols, 5 - current_count)
+        for col in to_add:
+            start_num = col * 10 + 1
+            end_num = start_num + 9
+            if col == 0:
+                start_num = 1
+                end_num = 9
+            elif col == 8:
+                start_num = 80
+                end_num = 90
+            
+            existing_numbers = [ticket[r][col] for r in range(3) if ticket[r][col] != 0]
+            available_numbers = [n for n in range(start_num, end_num + 1) 
+                               if n not in existing_numbers]
+            if available_numbers:
+                ticket[row][col] = random.choice(available_numbers)
+
+def generate_tambola_ticket_fallback():
+    """Fallback method that guarantees correct structure"""
+    ticket = [[0]*9 for _ in range(3)]
+    
+    # Step 1: Ensure each column has at least 1 number
+    for col in range(9):
+        start_num = col * 10 + 1
+        end_num = start_num + 9
+        if col == 0:
+            start_num = 1
+            end_num = 9
+        elif col == 8:
+            start_num = 80
+            end_num = 90
+        
+        available_numbers = list(range(start_num, end_num + 1))
+        random.shuffle(available_numbers)
+        
+        # Place one number in a random row
+        row = random.randint(0, 2)
+        ticket[row][col] = available_numbers[0]
+    
+    # Step 2: We now have 9 numbers, need 6 more to reach 15 total
+    numbers_added = 0
+    while numbers_added < 6:
+        col = random.randint(0, 8)
+        row = random.randint(0, 2)
+        
+        # Check if this cell is empty and column has less than 3 numbers
+        if ticket[row][col] == 0:
+            numbers_in_col = sum(1 for r in range(3) if ticket[r][col] != 0)
+            if numbers_in_col < 3:
+                start_num = col * 10 + 1
+                end_num = start_num + 9
+                if col == 0:
+                    start_num = 1
+                    end_num = 9
+                elif col == 8:
+                    start_num = 80
+                    end_num = 90
+                
+                existing_numbers = [ticket[r][col] for r in range(3) if ticket[r][col] != 0]
+                available_numbers = [n for n in range(start_num, end_num + 1) 
+                                   if n not in existing_numbers]
+                if available_numbers:
+                    ticket[row][col] = random.choice(available_numbers)
+                    numbers_added += 1
     
     return ticket
 
@@ -121,55 +287,7 @@ def can_accept_number(self, ticket, row, col, col_range):
     # This is handled by the calling function
     return True
 
-def generate_tambola_ticket_fallback():
-    """Fallback method that guarantees 5 numbers per row"""
-    ticket = [[0 for _ in range(9)] for _ in range(3)]
-    
-    column_ranges = [
-        (1, 9), (10, 19), (20, 29), (30, 39), (40, 49),
-        (50, 59), (60, 69), (70, 79), (80, 90)
-    ]
-    
-    # Step 1: Assign exactly 5 positions per row
-    for row in range(3):
-        # Choose 5 random columns for this row
-        positions = random.sample(range(9), 5)
-        for col in positions:
-            ticket[row][col] = -1  # Mark for number assignment
-    
-    # Step 2: Assign numbers to marked positions
-    for col in range(9):
-        start, end = column_ranges[col]
-        available_numbers = list(range(start, end + 1))
-        random.shuffle(available_numbers)
-        
-        # Get rows that need numbers in this column
-        rows_needing_numbers = [row for row in range(3) if ticket[row][col] == -1]
-        
-        # Assign numbers
-        for i, row in enumerate(rows_needing_numbers):
-            if i < len(available_numbers):
-                ticket[row][col] = available_numbers[i]
-            else:
-                # Fallback: use any available number from range
-                ticket[row][col] = random.randint(start, end)
-    
-    # Step 3: Sort numbers in each column
-    for col in range(9):
-        numbers_with_rows = []
-        for row in range(3):
-            if ticket[row][col] != 0:
-                numbers_with_rows.append((row, ticket[row][col]))
-        
-        numbers_with_rows.sort(key=lambda x: x[1])
-        
-        # Clear and reassign sorted numbers
-        for row in range(3):
-            ticket[row][col] = 0
-        for row, number in numbers_with_rows:
-            ticket[row][col] = number
-    
-    return ticket
+
 
 def is_ticket_unique(ticket):
     """Check if this ticket is unique by creating a hash"""
