@@ -354,7 +354,6 @@
                 <li><strong>Top Line:</strong> Complete first row</li>
                 <li><strong>Middle Line:</strong> Complete second row</li>
                 <li><strong>Bottom Line:</strong> Complete third row</li>
-                <li><strong>Four Corners:</strong> Four corner numbers</li>
                 <li><strong>Full House:</strong> All 15 numbers</li>
             </ul>
             <p style="text-align: center; margin-top: 10px; font-weight: 600;">
@@ -363,7 +362,7 @@
         </div>
         
         <div class="ticket-footer">
-            <p>Generated on: {{ now.strftime('%Y-%m-%d %H:%M') if now else '' }} | Ticket ID: {{ session.device_id[:8] if session.device_id else '' }}</p>
+            <p>App Created by Ayavue Enterprise ,Generated on: {{ now.strftime('%Y-%m-%d %H:%M') if now else '' }} | Ticket ID: {{ session.device_id[:8] if session.device_id else '' }}</p>
         </div>
     </div>
 
