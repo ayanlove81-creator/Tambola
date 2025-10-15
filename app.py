@@ -55,7 +55,7 @@ def generate_ticket_code():
             return code
 
 def generate_tambola_ticket():
-    """Simple and reliable Tambola ticket generation"""
+    """Generate a proper Tambola ticket with correct structure"""
     ticket = [[0]*9 for _ in range(3)]
     
     column_ranges = [
@@ -63,31 +63,42 @@ def generate_tambola_ticket():
         (50, 59), (60, 69), (70, 79), (80, 90)
     ]
     
-    # We need exactly 15 numbers total
-    numbers_placed = 0
-    
-    while numbers_placed < 15:
-        # Choose a random column
-        col = random.randint(0, 8)
+    # Step 1: Ensure each column has exactly 1, 2, or 3 numbers (at least 1)
+    # First, assign exactly 1 number to each column
+    for col in range(9):
+        start, end = column_ranges[col]
+        available_numbers = list(range(start, end + 1))
+        random.shuffle(available_numbers)
         
-        # Check if column can accept more numbers (max 3)
+        # Choose a random row for this column
+        row = random.randint(0, 2)
+        ticket[row][col] = available_numbers[0]
+    
+    # Step 2: We now have 9 numbers, need 6 more to reach 15 total
+    numbers_added = 0
+    max_attempts = 100
+    attempts = 0
+    
+    while numbers_added < 6 and attempts < max_attempts:
+        attempts += 1
+        
+        # Choose a random column that can accept more numbers (max 3 per column)
+        col = random.randint(0, 8)
         numbers_in_col = sum(1 for row in range(3) if ticket[row][col] != 0)
         if numbers_in_col >= 3:
             continue
         
-        # Choose a random empty cell in this column
-        empty_cells = []
-        for row in range(3):
-            if ticket[row][col] == 0:
-                # Check if row can accept more numbers (max 5)
-                numbers_in_row = sum(1 for num in ticket[row] if num != 0)
-                if numbers_in_row < 5:
-                    empty_cells.append(row)
-        
-        if not empty_cells:
+        # Choose a random row in this column that's empty
+        empty_rows = [row for row in range(3) if ticket[row][col] == 0]
+        if not empty_rows:
             continue
+            
+        row = random.choice(empty_rows)
         
-        row = random.choice(empty_cells)
+        # Check if this row can accept more numbers (max 5 per row)
+        numbers_in_row = sum(1 for num in ticket[row] if num != 0)
+        if numbers_in_row >= 5:
+            continue
         
         # Generate a valid number for this column
         start, end = column_ranges[col]
@@ -96,11 +107,42 @@ def generate_tambola_ticket():
         
         if available_numbers:
             ticket[row][col] = random.choice(available_numbers)
-            numbers_placed += 1
+            numbers_added += 1
     
-    # Sort numbers in each column
+    # Step 3: If we couldn't place all numbers, use a more direct approach
+    if numbers_added < 6:
+        # Find all empty cells that can accept numbers
+        empty_cells = []
+        for row in range(3):
+            for col in range(9):
+                if ticket[row][col] == 0:
+                    numbers_in_col = sum(1 for r in range(3) if ticket[r][col] != 0)
+                    numbers_in_row = sum(1 for num in ticket[row] if num != 0)
+                    if numbers_in_col < 3 and numbers_in_row < 5:
+                        empty_cells.append((row, col))
+        
+        # Shuffle and fill remaining numbers
+        random.shuffle(empty_cells)
+        cells_to_fill = min(6 - numbers_added, len(empty_cells))
+        
+        for i in range(cells_to_fill):
+            row, col = empty_cells[i]
+            start, end = column_ranges[col]
+            existing_numbers = [ticket[r][col] for r in range(3) if ticket[r][col] != 0]
+            available_numbers = [n for n in range(start, end + 1) if n not in existing_numbers]
+            
+            if available_numbers:
+                ticket[row][col] = random.choice(available_numbers)
+                numbers_added += 1
+    
+    # Step 4: Sort numbers in each column
     for col in range(9):
         sort_column_numbers(ticket, col)
+    
+    # Final verification
+    total_numbers = count_ticket_numbers(ticket)
+    if total_numbers != 15:
+        print(f"Warning: Ticket has {total_numbers} numbers instead of 15")
     
     return ticket
 
@@ -231,16 +273,37 @@ def generate_unique_ticket():
     return generate_tambola_ticket()
 
 def count_ticket_numbers(ticket):
-    """Count total numbers in ticket and verify row counts"""
+    """Count total numbers in ticket and verify row and column counts"""
     total = 0
-    row_counts = []
+    row_counts = [0, 0, 0]
+    col_counts = [0] * 9
     
-    for row in ticket:
-        row_count = sum(1 for num in row if num != 0)
-        row_counts.append(row_count)
-        total += row_count
+    for row_idx, row in enumerate(ticket):
+        for col_idx, num in enumerate(row):
+            if num != 0:
+                total += 1
+                row_counts[row_idx] += 1
+                col_counts[col_idx] += 1
     
-    print(f"Ticket verification - Total: {total}, Row counts: {row_counts}")
+    print(f"Ticket verification:")
+    print(f"Total numbers: {total}")
+    print(f"Row counts: {row_counts}")
+    print(f"Column counts: {col_counts}")
+    
+    # Verify rules
+    if total != 15:
+        print(f"ERROR: Total numbers should be 15, got {total}")
+    
+    for i, count in enumerate(row_counts):
+        if count != 5:
+            print(f"ERROR: Row {i} should have 5 numbers, got {count}")
+    
+    for i, count in enumerate(col_counts):
+        if count == 0:
+            print(f"ERROR: Column {i} has no numbers!")
+        if count > 3:
+            print(f"ERROR: Column {i} has {count} numbers (max 3)")
+    
     return total
 
 def generate_qr(url):
