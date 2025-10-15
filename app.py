@@ -1,198 +1,217 @@
-from flask import Flask, render_template, request, session, redirect, url_for, jsonify
-import json
-import random
-from database import init_db, get_db_connection, get_or_create_device_id
-import qrcode
-import io
-import base64
 import os
+import sqlite3
+import uuid
+import random
+import json
+from flask import Flask, render_template, request, session, redirect, url_for
 
 app = Flask(__name__)
-app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
+app.secret_key = os.environ.get('SECRET_KEY', 'dev-key-123')
 
-# Initialize database
-init_db()
+# Database setup for Render
+def get_db_path():
+    return '/tmp/tambola.db' if 'RENDER' in os.environ else 'tambola.db'
 
-def generate_tambola_ticket():
-    """Generate a Tambola ticket with 3 rows and 9 columns"""
+def init_db():
+    conn = sqlite3.connect(get_db_path())
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS users
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  name TEXT NOT NULL,
+                  device_id TEXT UNIQUE NOT NULL,
+                  ticket_data TEXT,
+                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    conn.commit()
+    conn.close()
+
+def get_db():
+    conn = sqlite3.connect(get_db_path())
+    conn.row_factory = sqlite3.Row
+    return conn
+
+def generate_ticket():
     ticket = [[0]*9 for _ in range(3)]
     
-    # Generate numbers for each column
     for col in range(9):
         start_num = col * 10 + 1
         end_num = start_num + 9
         if col == 0:
-            start_num = 1
-            end_num = 9
+            start_num, end_num = 1, 9
         elif col == 8:
-            start_num = 80
-            end_num = 90
-        
-        numbers = random.sample(range(start_num, end_num + 1), 3)
+            start_num, end_num = 80, 90
+            
+        numbers = random.sample(range(start_num, end_num+1), 3)
         numbers.sort()
+        positions = random.sample([0,1,2], 3)
         
-        # Place numbers in random rows
-        positions = random.sample(range(3), 3)
         for i, pos in enumerate(positions):
             ticket[pos][col] = numbers[i]
     
-    # Ensure each row has exactly 5 numbers
-    for row in range(3):
-        non_zero = [i for i, num in enumerate(ticket[row]) if num != 0]
-        if len(non_zero) > 5:
-            # Remove extra numbers
-            to_remove = random.sample(non_zero, len(non_zero) - 5)
-            for col in to_remove:
-                ticket[row][col] = 0
-        elif len(non_zero) < 5:
-            # Add numbers if needed
-            zero_cols = [i for i in range(9) if ticket[row][i] == 0]
-            to_add = random.sample(zero_cols, 5 - len(non_zero))
-            for col in to_add:
-                start_num = col * 10 + 1
-                end_num = start_num + 9
-                if col == 0:
-                    start_num = 1
-                    end_num = 9
-                elif col == 8:
-                    start_num = 80
-                    end_num = 90
-                
-                # Find a unique number for this column
-                existing_numbers = [ticket[r][col] for r in range(3)]
-                available_numbers = [n for n in range(start_num, end_num + 1) 
-                                   if n not in existing_numbers]
-                if available_numbers:
-                    ticket[row][col] = random.choice(available_numbers)
-    
     return ticket
-
-def generate_qr_code(url):
-    """Generate QR code as base64 string"""
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=4,
-    )
-    qr.add_data(url)
-    qr.make(fit=True)
-    
-    img = qr.make_image(fill_color="black", back_color="white")
-    buffer = io.BytesIO()
-    img.save(buffer, format='PNG')
-    buffer.seek(0)
-    
-    return base64.b64encode(buffer.getvalue()).decode()
 
 @app.route('/')
 def index():
     if 'device_id' not in session:
-        session['device_id'] = get_or_create_device_id()
+        session['device_id'] = str(uuid.uuid4())
     
-    conn = get_db_connection()
-    user = conn.execute(
-        'SELECT * FROM users WHERE device_id = ?', 
-        (session['device_id'],)
-    ).fetchone()
-    conn.close()
+    db = get_db()
+    user = db.execute('SELECT * FROM users WHERE device_id = ?', [session['device_id']]).fetchone()
+    db.close()
     
     if user:
-        return redirect(url_for('show_ticket'))
+        return redirect('/ticket')
     
-    # Generate QR code for registration
-    base_url = request.url_root
-    qr_url = base_url + url_for('register')[1:] if base_url.endswith('/') else base_url + url_for('register')
-    qr_code = generate_qr_code(qr_url)
-    
-    return render_template('index.html', qr_code=qr_code, qr_url=qr_url)
+    # Simple link instead of QR code
+    return '''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Tambola Tickets</title>
+        <style>
+            body { font-family: Arial; text-align: center; padding: 20px; }
+            .btn { background: blue; color: white; padding: 15px; text-decoration: none; border-radius: 5px; }
+        </style>
+    </head>
+    <body>
+        <h1>Tambola Ticket Generator</h1>
+        <p>Click below to get your ticket:</p>
+        <a href="/register" class="btn">Get Your Ticket</a>
+    </body>
+    </html>
+    '''
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if 'device_id' not in session:
-        session['device_id'] = get_or_create_device_id()
+        session['device_id'] = str(uuid.uuid4())
     
-    conn = get_db_connection()
-    user = conn.execute(
-        'SELECT * FROM users WHERE device_id = ?', 
-        (session['device_id'],)
-    ).fetchone()
+    db = get_db()
+    user = db.execute('SELECT * FROM users WHERE device_id = ?', [session['device_id']]).fetchone()
     
     if user:
-        conn.close()
-        return redirect(url_for('show_ticket'))
+        db.close()
+        return redirect('/ticket')
     
     if request.method == 'POST':
         name = request.form['name'].strip()
-        
-        if not name:
-            return render_template('register.html', error='Please enter your name')
-        
-        # Generate ticket
-        ticket = generate_tambola_ticket()
-        ticket_json = json.dumps(ticket)
-        
-        # Save user and ticket
-        cursor = conn.cursor()
-        cursor.execute(
-            'INSERT INTO users (name, device_id, ticket_data) VALUES (?, ?, ?)',
-            (name, session['device_id'], ticket_json)
-        )
-        user_id = cursor.lastrowid
-        
-        conn.commit()
-        conn.close()
-        
-        return redirect(url_for('show_ticket'))
+        if name:
+            ticket = generate_ticket()
+            try:
+                db.execute('INSERT INTO users (name, device_id, ticket_data) VALUES (?, ?, ?)',
+                          [name, session['device_id'], json.dumps(ticket)])
+                db.commit()
+                db.close()
+                return redirect('/ticket')
+            except sqlite3.IntegrityError:
+                db.close()
+                return redirect('/ticket')
     
-    conn.close()
-    return render_template('register.html')
+    db.close()
+    return '''
+    <form method="POST" style="text-align: center; padding: 20px;">
+        <h1>Register for Tambola</h1>
+        <input type="text" name="name" placeholder="Enter your name" required>
+        <br><br>
+        <button type="submit">Get Ticket</button>
+    </form>
+    '''
 
 @app.route('/ticket')
 def show_ticket():
     if 'device_id' not in session:
-        return redirect(url_for('index'))
+        return redirect('/')
     
-    conn = get_db_connection()
-    user = conn.execute(
-        'SELECT * FROM users WHERE device_id = ?', 
-        (session['device_id'],)
-    ).fetchone()
-    conn.close()
+    db = get_db()
+    user = db.execute('SELECT * FROM users WHERE device_id = ?', [session['device_id']]).fetchone()
+    db.close()
     
     if not user:
-        return redirect(url_for('register'))
+        return redirect('/register')
     
     ticket = json.loads(user['ticket_data'])
-    return render_template('ticket.html', ticket=ticket, user_name=user['name'])
+    
+    # Generate HTML table for ticket
+    ticket_html = '<table style="border-collapse: collapse; margin: 20px auto; border: 2px solid black;">'
+    for row in ticket:
+        ticket_html += '<tr>'
+        for number in row:
+            if number == 0:
+                ticket_html += '<td style="width: 50px; height: 50px; border: 1px solid #ccc; background: #f0f0f0;"></td>'
+            else:
+                ticket_html += f'<td style="width: 50px; height: 50px; border: 1px solid black; text-align: center; font-weight: bold;">{number}</td>'
+        ticket_html += '</tr>'
+    ticket_html += '</table>'
+    
+    return f'''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Your Ticket</title>
+        <style>
+            body {{ font-family: Arial; text-align: center; padding: 20px; }}
+        </style>
+    </head>
+    <body>
+        <h1>Your Tambola Ticket</h1>
+        <h2>Player: {user['name']}</h2>
+        {ticket_html}
+        <br>
+        <button onclick="window.print()">Print Ticket</button>
+        <a href="/">Home</a>
+    </body>
+    </html>
+    '''
 
 @app.route('/admin')
 def admin():
-    conn = get_db_connection()
-    users = conn.execute('''
-        SELECT name, device_id, ticket_data, created_at 
-        FROM users ORDER BY created_at DESC
-    ''').fetchall()
-    conn.close()
+    db = get_db()
+    users = db.execute('SELECT * FROM users ORDER BY created_at DESC').fetchall()
+    db.close()
     
-    user_data = []
+    users_html = ''
     for user in users:
-        user_data.append({
-            'name': user['name'],
-            'device_id': user['device_id'],
-            'ticket': json.loads(user['ticket_data']),
-            'created_at': user['created_at']
-        })
+        ticket = json.loads(user['ticket_data'])
+        ticket_preview = '<table style="border-collapse: collapse; font-size: 10px; display: inline-block;">'
+        for row in ticket:
+            ticket_preview += '<tr>'
+            for number in row:
+                if number == 0:
+                    ticket_preview += '<td style="width: 20px; height: 20px; border: 1px solid #ccc; background: #f0f0f0;"></td>'
+                else:
+                    ticket_preview += f'<td style="width: 20px; height: 20px; border: 1px solid black; text-align: center;">{number}</td>'
+            ticket_preview += '</tr>'
+        ticket_preview += '</table>'
+        
+        users_html += f'''
+        <div style="border: 1px solid #ccc; padding: 10px; margin: 10px;">
+            <h3>{user['name']}</h3>
+            <p>Registered: {user['created_at']}</p>
+            {ticket_preview}
+        </div>
+        '''
     
-    return render_template('admin.html', users=user_data)
+    return f'''
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Admin</title>
+    </head>
+    <body>
+        <h1>Admin Panel</h1>
+        <p>Total Players: {len(users)}</p>
+        {users_html}
+        <a href="/">Home</a>
+    </body>
+    </html>
+    '''
 
 @app.route('/health')
 def health():
-    return jsonify({"status": "healthy"})
+    return 'OK'
+
+# Initialize database
+init_db()
 
 if __name__ == '__main__':
-    # Initialize database
-    init_db()
-    
-    port = int(os.environ.get('PORT', 5000))
-    app.run(host='0.0.0.0', port=port, debug=False)  # Set debug=False for production
+    port = int(os.environ.get('PORT', 10000))
+    app.run(host='0.0.0.0', port=port, debug=False)
