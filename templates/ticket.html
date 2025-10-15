@@ -428,7 +428,7 @@
         <div class="player-info">
             <h1>
                 <span class="diya-title">🪔</span>
-                ✨ Happy Diwali ✨
+                ✨ Happy Diwali ✨ TCI Indian Community
                 <span class="diya-title">🪔</span>
             </h1>
             <h2>Player: {{ user_name }}</h2>
@@ -489,7 +489,6 @@
                 <li><strong>Top Line:</strong> Complete first row</li>
                 <li><strong>Middle Line:</strong> Complete second row</li>
                 <li><strong>Bottom Line:</strong> Complete third row</li>
-                <li><strong>Four Corners:</strong> Four corner numbers</li>
                 <li><strong>Full House:</strong> All 15 numbers</li>
             </ul>
             <p style="text-align: center; margin-top: 10px; font-weight: 600; color: #ff6b35;">
@@ -498,7 +497,7 @@
         </div>
         
         <div class="ticket-footer">
-            <p>Generated on: {{ now.strftime('%Y-%m-%d %H:%M') if now else '' }} | Ticket ID: {{ session.device_id[:8] if session.device_id else '' }}</p>
+            <p>Created by Ayavue Enterprice :- Generated on: {{ now.strftime('%Y-%m-%d %H:%M') if now else '' }} | Ticket ID: {{ session.device_id[:8] if session.device_id else '' }}</p>
         </div>
     </div>
 
