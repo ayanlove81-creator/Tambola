@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+    <!DOCTYPE html>
 <html>
 <head>
     <title>WELCOME To TCI INDIAN COMMUNITY DIWALI PARTYt</title>
@@ -23,23 +23,25 @@
         .player-info {
             background: #2c3e50;
             color: white;
-            padding: 10px;
+            padding: 15px;
             border-radius: 5px;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
         }
         .tambola-ticket {
             border-collapse: collapse;
-            margin: 0 auto;
+            margin: 20px auto;
             background: white;
             border: 2px solid #2c3e50;
+            width: 100%;
         }
         .tambola-ticket td {
-            width: 45px;
-            height: 45px;
-            border: 1px solid #34495e;
+            width: 11%;
+            height: 50px;
+            border: 2px solid #34495e;
             text-align: center;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 18px;
+            position: relative;
         }
         .tambola-ticket td.number {
             background: #fff;
@@ -51,13 +53,14 @@
         .btn {
             background: #3498db;
             color: white;
-            padding: 10px 20px;
+            padding: 12px 24px;
             text-decoration: none;
             border: none;
             border-radius: 5px;
-            margin: 5px;
+            margin: 10px;
             cursor: pointer;
             display: inline-block;
+            font-size: 16px;
         }
         .btn:hover {
             background: #2980b9;
@@ -69,19 +72,37 @@
             margin-top: 20px;
             text-align: left;
         }
+        .ticket-count {
+            background: #27ae60;
+            color: white;
+            padding: 8px 15px;
+            border-radius: 20px;
+            font-weight: bold;
+            display: inline-block;
+            margin: 10px 0;
+        }
         @media print {
             .no-print { display: none; }
             body { background: white; }
             .ticket-container { border: none; box-shadow: none; }
+        }
+        @media (max-width: 600px) {
+            .tambola-ticket td {
+                height: 40px;
+                font-size: 14px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="ticket-container">
         <div class="player-info">
-            <h1>🎫 Tambola Ticket</h1>
+            <h1>🎫 TAMBOLA TICKET</h1>
             <h2>Player: {{ user_name }}</h2>
         </div>
+        
+        {% if ticket %}
+        <div class="ticket-count">Numbers: {{ total_numbers }}/15</div>
         
         <table class="tambola-ticket">
             {% for row in ticket %}
@@ -94,10 +115,13 @@
             </tr>
             {% endfor %}
         </table>
-        
-        <div style="margin: 15px 0; font-weight: bold; color: #27ae60;">
-            Total Numbers: {{ total_numbers }}/15 ✅
+        {% else %}
+        <div style="color: red; padding: 20px;">
+            <h3>❌ Error: No ticket data found</h3>
+            <p>Please go back and register again.</p>
+            <a href="/register" class="btn">Register Again</a>
         </div>
+        {% endif %}
         
         <div class="no-print">
             <button onclick="window.print()" class="btn">🖨️ Print Ticket</button>
@@ -107,13 +131,13 @@
         <div class="instructions">
             <h3>🎯 How to Play Tambola:</h3>
             <ul>
-                <li>Mark numbers as they are called</li>
-                <li><strong>Early Five:</strong> First 5 numbers</li>
+                <li><strong>Early Five:</strong> First 5 numbers marked</li>
                 <li><strong>Top Line:</strong> Complete first row</li>
                 <li><strong>Middle Line:</strong> Complete second row</li>
                 <li><strong>Bottom Line:</strong> Complete third row</li>
                 <li><strong>Full House:</strong> All 15 numbers</li>
             </ul>
+            <p><strong>Mark numbers as they are called!</strong></p>
         </div>
     </div>
 </body>
