@@ -6,8 +6,10 @@ import json
 import qrcode
 import io
 import base64
-from flask import Flask, render_template, request, session, redirect, url_for
+import secrets
+import string
 from datetime import datetime
+from flask import Flask, render_template, request, session, redirect, url_for
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-key-123')
@@ -23,6 +25,7 @@ def init_db():
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   name TEXT NOT NULL,
                   device_id TEXT UNIQUE NOT NULL,
+                  ticket_code TEXT UNIQUE NOT NULL,
                   ticket_data TEXT,
                   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     
@@ -38,35 +41,18 @@ def get_db():
     conn = sqlite3.connect(get_db_path())
     conn.row_factory = sqlite3.Row
     return conn
-    
-@app.route('/ticket')
-def show_ticket():
-    if 'device_id' not in session:
-        return redirect('/')
-    
-    db = get_db()
-    user = db.execute('SELECT * FROM users WHERE device_id = ?', [session['device_id']]).fetchone()
-    db.close()
-    
-    if not user:
-        return redirect('/register')
-    
-    try:
-        ticket = json.loads(user['ticket_data'])
-        total_numbers = count_ticket_numbers(ticket)
-        
-        # Pass current time for the ticket footer
-        current_time = datetime.now()
-        
-        return render_template('ticket.html', 
-                             ticket=ticket, 
-                             user_name=user['name'], 
-                             total_numbers=total_numbers,
-                             now=current_time)
-    except Exception as e:
-        print(f"Error loading ticket: {e}")
-        return "Error loading ticket. Please register again."
-        
+
+def generate_ticket_code():
+    """Generate a unique 6-character ticket code"""
+    characters = string.ascii_uppercase + string.digits
+    while True:
+        code = ''.join(secrets.choice(characters) for _ in range(6))
+        db = get_db()
+        existing = db.execute('SELECT * FROM users WHERE ticket_code = ?', [code]).fetchone()
+        db.close()
+        if not existing:
+            return code
+
 def generate_tambola_ticket():
     """
     Generate proper Tambola ticket with exactly 15 numbers
@@ -225,15 +211,19 @@ def register():
     if request.method == 'POST':
         name = request.form['name'].strip()
         if name:
-            # Generate unique ticket
+            # Generate unique ticket and code
             ticket = generate_unique_ticket()
             ticket_json = json.dumps(ticket)
+            ticket_code = generate_ticket_code()
             
             try:
-                db.execute('INSERT INTO users (name, device_id, ticket_data) VALUES (?, ?, ?)',
-                          [name, session['device_id'], ticket_json])
+                db.execute('INSERT INTO users (name, device_id, ticket_code, ticket_data) VALUES (?, ?, ?, ?)',
+                          [name, session['device_id'], ticket_code, ticket_json])
                 db.commit()
                 db.close()
+                
+                # Store ticket code in session for recovery
+                session['ticket_code'] = ticket_code
                 return redirect('/ticket')
             except sqlite3.IntegrityError:
                 # User already exists, redirect to ticket
@@ -244,36 +234,52 @@ def register():
             return render_template('register.html', error='Please enter your name')
     
     db.close()
-    return render_template('register.html')  # This renders the registration form
+    return render_template('register.html')
 
 @app.route('/ticket')
 def show_ticket():
-    if 'device_id' not in session:
+    # Check if user has ticket code in session or URL parameter
+    ticket_code = request.args.get('code') or session.get('ticket_code')
+    
+    if not ticket_code:
         return redirect('/')
     
     db = get_db()
-    user = db.execute('SELECT * FROM users WHERE device_id = ?', [session['device_id']]).fetchone()
+    user = db.execute('SELECT * FROM users WHERE ticket_code = ?', [ticket_code]).fetchone()
     db.close()
     
     if not user:
-        return redirect('/register')
+        return render_template('recover.html', error='Invalid ticket code')
     
     try:
         ticket = json.loads(user['ticket_data'])
         total_numbers = count_ticket_numbers(ticket)
+        current_time = datetime.now()
         
-        # Debug info
-        print(f"Ticket data: {ticket}")
-        print(f"Total numbers: {total_numbers}")
-        print(f"User name: {user['name']}")
+        # Store in session for future access
+        session['device_id'] = user['device_id']
+        session['ticket_code'] = user['ticket_code']
         
         return render_template('ticket.html', 
                              ticket=ticket, 
                              user_name=user['name'], 
-                             total_numbers=total_numbers)
+                             total_numbers=total_numbers,
+                             ticket_code=user['ticket_code'],
+                             now=current_time)
     except Exception as e:
         print(f"Error loading ticket: {e}")
         return "Error loading ticket. Please register again."
+
+@app.route('/recover', methods=['GET', 'POST'])
+def recover_ticket():
+    if request.method == 'POST':
+        ticket_code = request.form['ticket_code'].strip().upper()
+        if ticket_code:
+            return redirect(f'/ticket?code={ticket_code}')
+        else:
+            return render_template('recover.html', error='Please enter your ticket code')
+    
+    return render_template('recover.html')
 
 @app.route('/admin')
 def admin():
@@ -289,6 +295,7 @@ def admin():
             user_list.append({
                 'name': user['name'],
                 'ticket': ticket_data,
+                'ticket_code': user['ticket_code'],
                 'created_at': user['created_at'],
                 'numbers_count': count_ticket_numbers(ticket_data)
             })
