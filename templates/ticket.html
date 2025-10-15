@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>🪔✨ Happy Diwali 🪔✨ TCI Indian Community- this is Your Tambola Ticket</title>
+    <title>🎆✨ Magical Diwali ✨🎆 - Tambola Ticket</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
@@ -10,10 +10,25 @@
             font-family: 'Poppins', Arial, sans-serif; 
             text-align: center; 
             padding: 20px;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            background: linear-gradient(135deg, #0c0c2e 0%, #1a1a4e 50%, #2d2d8f 100%);
             min-height: 100vh;
             margin: 0;
             overflow-x: hidden;
+            position: relative;
+        }
+
+        /* Night Sky Stars */
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 3s infinite;
+            z-index: 1;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
         }
 
         /* Diya Blinking Animation */
@@ -28,101 +43,133 @@
             margin: 0 10px;
         }
 
-        /* Rocket Animation */
-        .rocket {
+        /* Disney-style Rocket Animation */
+        .disney-rocket {
             position: absolute;
-            font-size: 24px;
+            font-size: 32px;
             pointer-events: none;
             z-index: 999;
-            animation: launchRocket 2s ease-out forwards;
+            animation: disneyLaunch 2.5s ease-out forwards;
+            filter: drop-shadow(0 0 10px gold);
         }
 
-        @keyframes launchRocket {
+        @keyframes disneyLaunch {
             0% {
-                transform: translate(0, 0) rotate(0deg);
+                transform: translate(0, 0) scale(0.5) rotate(0deg);
+                opacity: 0;
+            }
+            20% {
+                transform: translate(var(--tx-start), var(--ty-start)) scale(1) rotate(-5deg);
                 opacity: 1;
             }
-            50% {
-                transform: translate(var(--tx), var(--ty)) rotate(10deg);
+            60% {
+                transform: translate(var(--tx-mid), var(--ty-mid)) scale(1.2) rotate(5deg);
                 opacity: 1;
             }
             100% {
-                transform: translate(var(--tx-end), var(--ty-end)) rotate(20deg);
+                transform: translate(var(--tx-end), var(--ty-end)) scale(0.8) rotate(10deg);
                 opacity: 0;
             }
         }
 
-        /* Rocket Trail */
-        .rocket-trail {
+        /* Magical Rocket Trail */
+        .magic-trail {
             position: absolute;
-            width: 4px;
-            height: 4px;
+            width: 6px;
+            height: 6px;
             border-radius: 50%;
-            background: #ff6b35;
             pointer-events: none;
-            animation: trail 1s ease-out forwards;
+            animation: magicTrail 1.5s ease-out forwards;
+            filter: blur(1px);
         }
 
-        @keyframes trail {
+        @keyframes magicTrail {
             0% {
                 transform: translate(0, 0);
                 opacity: 0.8;
+                filter: blur(0px);
             }
             100% {
                 transform: translate(var(--trail-x), var(--trail-y));
                 opacity: 0;
+                filter: blur(3px);
             }
         }
 
-        /* Fireworks Animation */
-        .firework {
+        /* Disney-style Explosion */
+        .disney-explosion {
             position: absolute;
-            width: 5px;
-            height: 5px;
-            border-radius: 50%;
             pointer-events: none;
             z-index: 1000;
+            animation: disneyExplode 1.5s ease-out forwards;
         }
 
-        @keyframes firework {
-            0% { 
-                transform: translate(var(--x), var(--y)); 
-                opacity: 1; 
-            }
-            100% { 
-                transform: translate(var(--x-end), var(--y-end)); 
-                opacity: 0; 
-            }
-        }
-
-        .particle {
-            position: absolute;
-            width: 4px;
-            height: 4px;
-            border-radius: 50%;
-            animation: particle 1s ease-out forwards;
-            pointer-events: none;
-        }
-
-        @keyframes particle {
+        @keyframes disneyExplode {
             0% {
-                transform: translate(0, 0);
+                transform: scale(0) rotate(0deg);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.5) rotate(180deg);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(2) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Sparkle Particles */
+        .sparkle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: gold;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: sparkleFall 2s ease-out forwards;
+            filter: drop-shadow(0 0 5px currentColor);
+        }
+
+        @keyframes sparkleFall {
+            0% {
+                transform: translate(0, 0) scale(1);
                 opacity: 1;
             }
             100% {
-                transform: translate(var(--tx), var(--ty));
+                transform: translate(var(--sparkle-x), var(--sparkle-y)) scale(0);
+                opacity: 0;
+            }
+        }
+
+        /* Ring Wave Effect */
+        .ring-wave {
+            position: absolute;
+            border: 2px solid;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: ringExpand 1s ease-out forwards;
+        }
+
+        @keyframes ringExpand {
+            0% {
+                transform: scale(0);
+                opacity: 0.8;
+            }
+            100% {
+                transform: scale(3);
                 opacity: 0;
             }
         }
 
         .ticket-container {
             background: 
-                /* Diwali-themed background */
-                radial-gradient(circle at 20% 80%, rgba(255,215,0,0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(255,69,0,0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(75,0,130,0.1) 0%, transparent 50%),
+                /* Magical gradient */
+                radial-gradient(circle at 20% 20%, rgba(255,215,0,0.2) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255,105,180,0.2) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(138,43,226,0.2) 0%, transparent 50%),
                 /* Main background */
-                linear-gradient(135deg, #fff5f5 0%, #fff 50%, #f0f8ff 100%);
+                linear-gradient(135deg, rgba(255,245,245,0.95) 0%, rgba(255,255,255,0.98) 50%, rgba(240,248,255,0.95) 100%);
             border: 3px solid #ff6b35;
             border-radius: 15px;
             padding: 25px;
@@ -130,20 +177,23 @@
             max-width: 550px;
             box-shadow: 
                 0 10px 30px rgba(0,0,0,0.3),
-                0 0 50px rgba(255,107,53,0.2);
+                0 0 50px rgba(255,107,53,0.3),
+                0 0 100px rgba(255,215,0,0.2);
             position: relative;
             overflow: hidden;
             z-index: 10;
+            backdrop-filter: blur(5px);
         }
 
-        /* Diya corners */
+        /* Magical corners */
         .ticket-container::before,
         .ticket-container::after {
-            content: '🪔';
+            content: '✨';
             position: absolute;
             font-size: 24px;
-            animation: blinkDiya 3s infinite;
+            animation: blinkDiya 2s infinite;
             z-index: 1;
+            filter: drop-shadow(0 0 10px gold);
         }
         .ticket-container::before {
             top: 10px;
@@ -155,42 +205,48 @@
         }
 
         .player-info {
-            background: linear-gradient(135deg, #ff6b35 0%, #ff8e53 100%);
+            background: linear-gradient(135deg, #8a2be2 0%, #da70d6 50%, #ff69b4 100%);
             color: white;
             padding: 20px;
             border-radius: 10px;
             margin-bottom: 25px;
             position: relative;
-            box-shadow: 0 4px 15px rgba(255,107,53,0.3);
+            box-shadow: 0 4px 15px rgba(138,43,226,0.4);
+            border: 2px solid gold;
         }
         .player-info h1 {
             margin: 0;
             font-size: 24px;
             font-weight: 700;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            background: linear-gradient(45deg, gold, #ffd700, #fffacd);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
         .player-info h2 {
             margin: 10px 0 0 0;
             font-size: 20px;
             font-weight: 600;
             color: #fffacd;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
         }
 
         .tambola-ticket {
             border-collapse: collapse;
             margin: 25px auto;
             background: rgba(255, 255, 255, 0.95);
-            border: 3px solid #ff6b35;
+            border: 3px solid #8a2be2;
             border-radius: 10px;
             width: 100%;
-            box-shadow: 0 5px 15px rgba(255,107,53,0.2);
+            box-shadow: 0 5px 15px rgba(138,43,226,0.3);
             position: relative;
             z-index: 2;
         }
         .tambola-ticket td {
             width: 11%;
             height: 55px;
-            border: 2px solid #ff8e53;
+            border: 2px solid #da70d6;
             text-align: center;
             font-weight: 700;
             font-size: 18px;
@@ -205,7 +261,7 @@
             position: relative;
         }
         .tambola-ticket td.number:hover {
-            background: linear-gradient(135deg, #ffa726 0%, #ff9800 100%);
+            background: linear-gradient(135deg, #da70d6 0%, #8a2be2 100%);
             color: white;
             transform: scale(1.05);
             z-index: 3;
@@ -230,17 +286,18 @@
             cursor: not-allowed;
         }
         .tambola-ticket td.empty::after {
-            content: '×';
-            color: #bdc3c7;
-            font-size: 20px;
+            content: '✨';
+            color: #da70d6;
+            font-size: 16px;
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            opacity: 0.5;
         }
 
         .btn {
-            background: linear-gradient(135deg, #ff6b35 0%, #e55627 100%);
+            background: linear-gradient(135deg, #8a2be2 0%, #da70d6 100%);
             color: white;
             padding: 12px 25px;
             text-decoration: none;
@@ -252,29 +309,30 @@
             font-size: 16px;
             font-weight: 600;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 15px rgba(255,107,53,0.3);
+            box-shadow: 0 4px 15px rgba(138,43,226,0.3);
+            border: 1px solid gold;
         }
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(255,107,53,0.4);
-            background: linear-gradient(135deg, #ff8e53 0%, #ff6b35 100%);
+            box-shadow: 0 6px 20px rgba(138,43,226,0.4);
+            background: linear-gradient(135deg, #da70d6 0%, #ff69b4 100%);
         }
         .btn-secondary {
-            background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+            background: linear-gradient(135deg, #ff69b4 0%, #ff1493 100%);
         }
 
         .instructions {
-            background: linear-gradient(135deg, #fff3e0 0%, #ffecb3 100%);
+            background: linear-gradient(135deg, #e6e6fa 0%, #d8bfd8 100%);
             padding: 20px;
             border-radius: 10px;
             margin-top: 25px;
             text-align: left;
-            border-left: 5px solid #ff6b35;
+            border-left: 5px solid #8a2be2;
             position: relative;
             z-index: 2;
         }
         .instructions h3 {
-            color: #ff6b35;
+            color: #8a2be2;
             margin-bottom: 15px;
             text-align: center;
             font-weight: 700;
@@ -297,28 +355,29 @@
             margin: 20px 0;
         }
         .ticket-count {
-            background: linear-gradient(135deg, #ff6b35 0%, #e55627 100%);
+            background: linear-gradient(135deg, #8a2be2 0%, #da70d6 100%);
             color: white;
             padding: 12px 25px;
             border-radius: 25px;
             font-weight: 700;
             display: inline-block;
-            box-shadow: 0 4px 15px rgba(255,107,53,0.3);
+            box-shadow: 0 4px 15px rgba(138,43,226,0.3);
             position: relative;
             z-index: 2;
             font-size: 18px;
+            border: 1px solid gold;
         }
         .progress-bar {
             width: 150px;
             height: 20px;
-            background: #ffecb3;
+            background: #e6e6fa;
             border-radius: 10px;
             overflow: hidden;
             position: relative;
         }
         .progress-fill {
             height: 100%;
-            background: linear-gradient(135deg, #ff6b35 0%, #e55627 100%);
+            background: linear-gradient(135deg, #8a2be2 0%, #da70d6 100%);
             border-radius: 10px;
             transition: width 0.3s ease;
             width: 0%;
@@ -332,14 +391,14 @@
             font-size: 14px;
         }
 
-        /* Full House Celebration */
-        .full-house-celebration {
+        /* Disney-style Full House Celebration */
+        .disney-celebration {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.8);
+            background: rgba(0,0,0,0.9);
             display: none;
             justify-content: center;
             align-items: center;
@@ -347,15 +406,19 @@
             flex-direction: column;
         }
 
-        .celebration-text {
+        .disney-text {
             color: gold;
-            font-size: 48px;
+            font-size: 52px;
             font-weight: bold;
-            text-shadow: 0 0 20px orange;
-            animation: celebrate 2s infinite;
+            text-shadow: 0 0 30px #ff69b4, 0 0 60px #8a2be2;
+            animation: disneyPulse 1s infinite;
+            background: linear-gradient(45deg, gold, #ffd700, #fffacd, #ff69b4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
         }
 
-        @keyframes celebrate {
+        @keyframes disneyPulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.1); }
         }
@@ -417,30 +480,34 @@
     </style>
 </head>
 <body>
-    <!-- Full House Celebration Overlay -->
-    <div id="fullHouseCelebration" class="full-house-celebration">
-        <div class="celebration-text">🎉 FULL HOUSE! 🎉</div>
-        <div style="color: white; font-size: 24px; margin-top: 20px;">Congratulations! You've marked all numbers!</div>
-        <button onclick="closeCelebration()" class="btn" style="margin-top: 20px;">Continue Playing</button>
+    <!-- Disney-style Celebration Overlay -->
+    <div id="disneyCelebration" class="disney-celebration">
+        <div class="disney-text">🎪 MAGICAL FULL HOUSE! 🎪</div>
+        <div style="color: white; font-size: 24px; margin-top: 20px; text-shadow: 0 0 10px gold;">
+            Congratulations! You've completed the magical journey!
+        </div>
+        <button onclick="closeCelebration()" class="btn" style="margin-top: 30px; font-size: 18px;">
+            ✨ Continue the Magic ✨
+        </button>
     </div>
 
     <div class="ticket-container">
         <div class="player-info">
             <h1>
-                <span class="diya-title">🪔</span>
-                ✨ Happy Diwali ✨ TCI Indian Community
-                <span class="diya-title">🪔</span>
+                <span class="diya-title">🎆</span>
+                ✨ Magical Diwali ✨
+                <span class="diya-title">🎆</span>
             </h1>
             <h2>Player: {{ user_name }}</h2>
             {% if ticket_code %}
-            <div style="margin-top: 10px; background: rgba(255, 255, 255, 0.2); padding: 8px 15px; border-radius: 20px; display: inline-block;">
+            <div style="margin-top: 10px; background: rgba(255, 255, 255, 0.2); padding: 8px 15px; border-radius: 20px; display: inline-block; border: 1px solid gold;">
                 <strong>Ticket Code: </strong>
-                <span style="font-family: monospace; font-size: 18px; font-weight: bold; letter-spacing: 2px; color: #fffacd;">
+                <span style="font-family: monospace; font-size: 18px; font-weight: bold; letter-spacing: 2px; color: gold;">
                     {{ ticket_code }}
                 </span>
             </div>
             <p style="margin: 5px 0 0 0; font-size: 12px; opacity: 0.8;">
-                📝 Save this code to recover your ticket later
+                ✨ Save this code for magical recovery ✨
             </p>
             {% endif %}
         </div>
@@ -448,7 +515,7 @@
         {% if ticket %}
         <div class="counter-container">
             <div class="ticket-count">
-                🎯 <span id="selectedCount">0</span>/<span id="totalCount">15</span> Numbers
+                🎪 <span id="selectedCount">0</span>/<span id="totalCount">15</span> Numbers
             </div>
             <div class="progress-bar">
                 <div class="progress-fill" id="progressFill"></div>
@@ -483,44 +550,58 @@
         </div>
         
         <div class="instructions">
-            <h3>🎯 How to Play Tambola:</h3>
+            <h3>🎪 Magical Tambola Rules:</h3>
             <ul>
                 <li><strong>Early Five:</strong> First 5 numbers marked</li>
                 <li><strong>Top Line:</strong> Complete first row</li>
                 <li><strong>Middle Line:</strong> Complete second row</li>
                 <li><strong>Bottom Line:</strong> Complete third row</li>
+                <li><strong>Four Corners:</strong> Four corner numbers</li>
                 <li><strong>Full House:</strong> All 15 numbers</li>
             </ul>
-            <p style="text-align: center; margin-top: 10px; font-weight: 600; color: #ff6b35;">
-                🚀 <strong>Click numbers for rocket celebrations!</strong> ✨
+            <p style="text-align: center; margin-top: 10px; font-weight: 600; color: #8a2be2;">
+                🎆 <strong>Click numbers for Disney-style magic!</strong> ✨
             </p>
         </div>
         
         <div class="ticket-footer">
-            <p>Created by Ayavue Enterprice :- Generated on: {{ now.strftime('%Y-%m-%d %H:%M') if now else '' }} | Ticket ID: {{ session.device_id[:8] if session.device_id else '' }}</p>
+            <p>Generated on: {{ now.strftime('%Y-%m-%d %H:%M') if now else '' }} | Ticket ID: {{ session.device_id[:8] if session.device_id else '' }}</p>
         </div>
     </div>
 
     <script>
-        let selectedNumbers = new Set();
-        const totalNumbers = 15;
+        // Create night sky stars
+        function createStars() {
+            for (let i = 0; i < 50; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                star.style.width = Math.random() * 3 + 'px';
+                star.style.height = star.style.width;
+                star.style.left = Math.random() * 100 + 'vw';
+                star.style.top = Math.random() * 100 + 'vh';
+                star.style.animationDelay = Math.random() * 3 + 's';
+                document.body.appendChild(star);
+            }
+        }
 
-        // Rocket function
-        function launchRocket(startX, startY) {
+        // Disney-style rocket launch
+        function launchDisneyRocket(startX, startY) {
             const rocket = document.createElement('div');
-            rocket.className = 'rocket';
+            rocket.className = 'disney-rocket';
             rocket.innerHTML = '🚀';
             
-            // Random direction for rocket
-            const angle = Math.random() * Math.PI * 2;
-            const distance = 200 + Math.random() * 300;
-            const tx = Math.cos(angle) * distance;
-            const ty = Math.sin(angle) * distance;
-            const txEnd = tx * 1.5;
-            const tyEnd = ty * 1.5;
+            // Magical trajectory
+            const txStart = (Math.random() - 0.5) * 100;
+            const tyStart = -100 - Math.random() * 100;
+            const txMid = txStart * 2;
+            const tyMid = tyStart * 1.5;
+            const txEnd = txStart * 3;
+            const tyEnd = tyStart * 2;
             
-            rocket.style.setProperty('--tx', tx + 'px');
-            rocket.style.setProperty('--ty', ty + 'px');
+            rocket.style.setProperty('--tx-start', txStart + 'px');
+            rocket.style.setProperty('--ty-start', tyStart + 'px');
+            rocket.style.setProperty('--tx-mid', txMid + 'px');
+            rocket.style.setProperty('--ty-mid', tyMid + 'px');
             rocket.style.setProperty('--tx-end', txEnd + 'px');
             rocket.style.setProperty('--ty-end', tyEnd + 'px');
             rocket.style.left = startX + 'px';
@@ -528,150 +609,142 @@
             
             document.body.appendChild(rocket);
             
-            // Create rocket trail
-            createRocketTrail(startX, startY, tx, ty);
+            // Create magical trail
+            createMagicTrail(startX, startY, txEnd, tyEnd);
             
+            // Schedule explosion at peak
             setTimeout(() => {
+                createDisneyExplosion(startX + txMid, startY + tyMid);
                 rocket.remove();
-            }, 2000);
+            }, 1500);
         }
 
-        // Rocket trail effect
-        function createRocketTrail(startX, startY, tx, ty) {
-            for (let i = 0; i < 15; i++) {
+        // Magical trail effect
+        function createMagicTrail(startX, startY, endX, endY) {
+            const trailColors = ['gold', '#ff69b4', '#8a2be2', '#00ffff', '#ff1493'];
+            
+            for (let i = 0; i < 20; i++) {
                 setTimeout(() => {
                     const trail = document.createElement('div');
-                    trail.className = 'rocket-trail';
+                    trail.className = 'magic-trail';
                     
-                    const progress = i / 15;
-                    const trailX = tx * progress;
-                    const trailY = ty * progress;
+                    const progress = i / 20;
+                    const trailX = endX * progress;
+                    const trailY = endY * progress;
                     
                     trail.style.setProperty('--trail-x', trailX + 'px');
                     trail.style.setProperty('--trail-y', trailY + 'px');
                     trail.style.left = startX + 'px';
                     trail.style.top = startY + 'px';
-                    
-                    // Random trail color
-                    const trailColors = ['#ff6b35', '#ff8e53', '#ffa726', '#ff9800'];
                     trail.style.background = trailColors[Math.floor(Math.random() * trailColors.length)];
                     
                     document.body.appendChild(trail);
                     
                     setTimeout(() => {
                         trail.remove();
-                    }, 1000);
-                }, i * 50);
+                    }, 1500);
+                }, i * 75);
             }
         }
 
-        // Fireworks function
-        function createFireworks(x, y) {
-            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffa500'];
+        // Disney-style explosion
+        function createDisneyExplosion(x, y) {
+            const explosion = document.createElement('div');
+            explosion.className = 'disney-explosion';
+            explosion.innerHTML = '💫';
+            explosion.style.fontSize = '48px';
+            explosion.style.left = x + 'px';
+            explosion.style.top = y + 'px';
+            explosion.style.color = ['gold', '#ff69b4', '#8a2be2'][Math.floor(Math.random() * 3)];
             
-            for (let i = 0; i < 25; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
+            document.body.appendChild(explosion);
+            
+            // Create sparkles
+            createSparkles(x, y);
+            
+            // Create ring waves
+            createRingWaves(x, y);
+            
+            setTimeout(() => {
+                explosion.remove();
+            }, 1500);
+        }
+
+        // Sparkle particles
+        function createSparkles(x, y) {
+            for (let i = 0; i < 30; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
                 
                 const angle = Math.random() * Math.PI * 2;
-                const distance = 40 + Math.random() * 80;
-                const tx = Math.cos(angle) * distance;
-                const ty = Math.sin(angle) * distance;
+                const distance = 80 + Math.random() * 120;
+                const sparkleX = Math.cos(angle) * distance;
+                const sparkleY = Math.sin(angle) * distance;
                 
-                particle.style.setProperty('--tx', tx + 'px');
-                particle.style.setProperty('--ty', ty + 'px');
-                particle.style.background = colors[Math.floor(Math.random() * colors.length)];
-                particle.style.left = x + 'px';
-                particle.style.top = y + 'px';
+                sparkle.style.setProperty('--sparkle-x', sparkleX + 'px');
+                sparkle.style.setProperty('--sparkle-y', sparkleY + 'px');
+                sparkle.style.left = x + 'px';
+                sparkle.style.top = y + 'px';
+                sparkle.style.background = ['gold', '#ff69b4', '#8a2be2', '#00ffff'][Math.floor(Math.random() * 4)];
                 
-                document.body.appendChild(particle);
+                document.body.appendChild(sparkle);
                 
                 setTimeout(() => {
-                    particle.remove();
-                }, 1000);
+                    sparkle.remove();
+                }, 2000);
             }
         }
 
-        // Celebration for full house
-        function showFullHouseCelebration() {
-            const celebration = document.getElementById('fullHouseCelebration');
+        // Ring wave effects
+        function createRingWaves(x, y) {
+            const colors = ['gold', '#ff69b4', '#8a2be2'];
+            
+            colors.forEach((color, index) => {
+                setTimeout(() => {
+                    const ring = document.createElement('div');
+                    ring.className = 'ring-wave';
+                    ring.style.borderColor = color;
+                    ring.style.left = x + 'px';
+                    ring.style.top = y + 'px';
+                    ring.style.width = '20px';
+                    ring.style.height = '20px';
+                    
+                    document.body.appendChild(ring);
+                    
+                    setTimeout(() => {
+                        ring.remove();
+                    }, 1000);
+                }, index * 200);
+            });
+        }
+
+        // Disney-style full house celebration
+        function showDisneyCelebration() {
+            const celebration = document.getElementById('disneyCelebration');
             celebration.style.display = 'flex';
             
-            // Create massive rockets and fireworks
-            for (let i = 0; i < 15; i++) {
+            // Massive magical finale
+            for (let i = 0; i < 20; i++) {
                 setTimeout(() => {
                     const x = Math.random() * window.innerWidth;
                     const y = Math.random() * window.innerHeight;
                     
-                    // Launch rocket
-                    launchRocket(x, y);
+                    launchDisneyRocket(x, y);
                     
-                    // Create fireworks at destination
-                    setTimeout(() => {
-                        createFireworks(x, y);
-                    }, 1000);
-                    
-                }, i * 300);
+                }, i * 200);
             }
         }
 
         function closeCelebration() {
-            document.getElementById('fullHouseCelebration').style.display = 'none';
+            document.getElementById('disneyCelebration').style.display = 'none';
         }
 
-        // Load saved selection from localStorage
-        function loadSelection() {
-            const saved = localStorage.getItem('ticketSelection_{{ ticket_code }}');
-            if (saved) {
-                selectedNumbers = new Set(JSON.parse(saved));
-                updateDisplay();
-            }
-        }
-
-        // Save selection to localStorage
-        function saveSelection() {
-            localStorage.setItem('ticketSelection_{{ ticket_code }}', JSON.stringify([...selectedNumbers]));
-        }
-
-        // Update counter and progress bar
-        function updateDisplay() {
-            const selectedCount = selectedNumbers.size;
-            document.getElementById('selectedCount').textContent = selectedCount;
-            document.getElementById('totalCount').textContent = totalNumbers;
-            
-            const progressPercent = (selectedCount / totalNumbers) * 100;
-            document.getElementById('progressFill').style.width = progressPercent + '%';
-            
-            // Update visual selection
-            document.querySelectorAll('.tambola-ticket td.number').forEach(cell => {
-                const number = parseInt(cell.getAttribute('data-number'));
-                if (selectedNumbers.has(number)) {
-                    cell.classList.add('selected');
-                } else {
-                    cell.classList.remove('selected');
-                }
-            });
-
-            // Check for full house
-            if (selectedCount === totalNumbers) {
-                setTimeout(showFullHouseCelebration, 500);
-            }
-        }
-
-        // Clear all selections
-        function clearSelection() {
-            if (confirm('Are you sure you want to clear all marked numbers?')) {
-                selectedNumbers.clear();
-                saveSelection();
-                updateDisplay();
-            }
-        }
-
-        // Initialize
+        // Initialize the magic
         document.addEventListener('DOMContentLoaded', function() {
+            createStars();
             loadSelection();
             
-            // Add click event to number cells
+            // Magical number clicks
             document.querySelectorAll('.tambola-ticket td.number').forEach(cell => {
                 cell.addEventListener('click', function(e) {
                     const number = parseInt(this.getAttribute('data-number'));
@@ -686,17 +759,8 @@
                         const x = rect.left + rect.width / 2;
                         const y = rect.top + rect.height / 2;
                         
-                        // Randomly choose between rocket and fireworks (70% rocket, 30% fireworks)
-                        if (Math.random() < 0.7) {
-                            // Launch rocket
-                            launchRocket(x, y);
-                            
-                            // Also create small fireworks at launch point
-                            createFireworks(x, y);
-                        } else {
-                            // Create fireworks only
-                            createFireworks(x, y);
-                        }
+                        // Always launch Disney rocket with magical effects
+                        launchDisneyRocket(x, y);
                     }
                     
                     saveSelection();
@@ -704,36 +768,70 @@
                 });
             });
 
-            // Add some random rockets and fireworks on page load for Diwali effect
+            // Magical entrance effects
             setTimeout(() => {
-                for (let i = 0; i < 8; i++) {
+                for (let i = 0; i < 5; i++) {
                     setTimeout(() => {
                         const x = Math.random() * window.innerWidth;
                         const y = Math.random() * window.innerHeight;
-                        
-                        if (Math.random() < 0.6) {
-                            launchRocket(x, y);
-                        } else {
-                            createFireworks(x, y);
-                        }
-                    }, i * 400);
+                        launchDisneyRocket(x, y);
+                    }, i * 500);
                 }
             }, 1000);
         });
 
-        // Keyboard shortcuts
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                clearSelection();
-            }
-        });
+        // Selection management
+        let selectedNumbers = new Set();
+        const totalNumbers = 15;
 
-        // Update page title with blinking diya
+        function loadSelection() {
+            const saved = localStorage.getItem('ticketSelection_{{ ticket_code }}');
+            if (saved) {
+                selectedNumbers = new Set(JSON.parse(saved));
+                updateDisplay();
+            }
+        }
+
+        function saveSelection() {
+            localStorage.setItem('ticketSelection_{{ ticket_code }}', JSON.stringify([...selectedNumbers]));
+        }
+
+        function updateDisplay() {
+            const selectedCount = selectedNumbers.size;
+            document.getElementById('selectedCount').textContent = selectedCount;
+            document.getElementById('totalCount').textContent = totalNumbers;
+            
+            const progressPercent = (selectedCount / totalNumbers) * 100;
+            document.getElementById('progressFill').style.width = progressPercent + '%';
+            
+            document.querySelectorAll('.tambola-ticket td.number').forEach(cell => {
+                const number = parseInt(cell.getAttribute('data-number'));
+                if (selectedNumbers.has(number)) {
+                    cell.classList.add('selected');
+                } else {
+                    cell.classList.remove('selected');
+                }
+            });
+
+            if (selectedCount === totalNumbers) {
+                setTimeout(showDisneyCelebration, 500);
+            }
+        }
+
+        function clearSelection() {
+            if (confirm('Clear all magical marks?')) {
+                selectedNumbers.clear();
+                saveSelection();
+                updateDisplay();
+            }
+        }
+
+        // Magical title animation
         let titleBlink = true;
         setInterval(() => {
             document.title = titleBlink ? 
-                "🪔✨ Happy Diwali 🪔✨ - Tambola Ticket" : 
-                "✨ Happy Diwali ✨ - Tambola Ticket";
+                "🎆✨ Magical Diwali ✨🎆 - Tambola Ticket" : 
+                "✨ Magical Diwali ✨ - Tambola Ticket";
             titleBlink = !titleBlink;
         }, 1000);
     </script>
