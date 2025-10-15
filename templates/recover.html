@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Recover Tambola Ticket</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Poppins', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .recover-container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #7f8c8d;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: border-color 0.3s;
+            text-transform: uppercase;
+            text-align: center;
+            font-weight: bold;
+            letter-spacing: 2px;
+        }
+        input[type="text"]:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        .btn {
+            background: #3498db;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s;
+            margin-bottom: 15px;
+        }
+        .btn:hover {
+            background: #2980b9;
+        }
+        .btn-secondary {
+            background: #95a5a6;
+        }
+        .btn-secondary:hover {
+            background: #7f8c8d;
+        }
+        .error {
+            background: #e74c3c;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .info-box {
+            background: #e8f4f8;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: left;
+        }
+        .ticket-code-example {
+            background: #2c3e50;
+            color: #3498db;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 18px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="recover-container">
+        <h1>🔍 Recover Your Ticket</h1>
+        <p class="subtitle">Enter your 6-digit ticket code to access your Tambola ticket</p>
+        
+        {% if error %}
+        <div class="error">
+            {{ error }}
+        </div>
+        {% endif %}
+        
+        <form method="POST" action="/recover">
+            <div class="form-group">
+                <label for="ticket_code">Ticket Code:</label>
+                <input type="text" id="ticket_code" name="ticket_code" 
+                       placeholder="e.g., A1B2C3" maxlength="6" required autofocus
+                       pattern="[A-Z0-9]{6}" title="Enter 6 uppercase letters or numbers">
+            </div>
+            
+            <button type="submit" class="btn">Find My Ticket 🎫</button>
+        </form>
+        
+        <a href="/" class="btn btn-secondary">🏠 Back to Home</a>
+        
+        <div class="info-box">
+            <h3>💡 Where to find your ticket code?</h3>
+            <p>Your unique 6-character code was shown when you first generated your ticket.</p>
+            <p><strong>Example ticket code:</strong></p>
+            <div class="ticket-code-example">A1B2C3</div>
+            <p>If you lost your code, you'll need to generate a new ticket.</p>
+        </div>
+    </div>
+
+    <script>
+        // Auto-uppercase and limit to 6 characters
+        document.getElementById('ticket_code').addEventListener('input', function(e) {
+            this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '').substring(0, 6);
+        });
+    </script>
+</body>
+</html>
