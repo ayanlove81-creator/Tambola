@@ -7,6 +7,7 @@ import qrcode
 import io
 import base64
 from flask import Flask, render_template, request, session, redirect, url_for
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-key-123')
