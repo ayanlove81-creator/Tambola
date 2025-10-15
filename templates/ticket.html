@@ -15,28 +15,31 @@
             min-height: 100vh;
             margin: 0;
         }
-        .ticket-container {
-            background: 
-                /* Watermark background */
-                url("data:image/svg+xml,%3Csvg width='200' height='200' viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath fill='%23f8f9fa' fill-opacity='0.1' d='M100,20 C133.137,20 160,46.863 160,80 C160,113.137 133.137,140 100,140 C66.863,140 40,113.137 40,80 C40,46.863 66.863,20 100,20 Z M100,30 C72.386,30 50,52.386 50,80 C50,107.614 72.386,130 100,130 C127.614,130 150,107.614 150,80 C150,52.386 127.614,30 100,30 Z'/%3E%3C/svg%3E"),
-                /* Border pattern */
-                linear-gradient(45deg, transparent 95%, #e74c3c 95%),
-                linear-gradient(135deg, transparent 95%, #e74c3c 95%),
-                linear-gradient(225deg, transparent 95%, #e74c3c 95%),
-                linear-gradient(315deg, transparent 95%, #e74c3c 95%),
-                /* Main background */
-                linear-gradient(135deg, #fff5f5 0%, #fff 50%, #f0f8ff 100%);
-            background-size: 100px 100px, 20px 20px, 20px 20px, 20px 20px, 20px 20px, cover;
-            border: 3px solid #e74c3c;
-            border-radius: 15px;
-            padding: 25px;
-            margin: 20px auto;
-            max-width: 550px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            position: relative;
-            overflow: hidden;
-        }
-        
+       .ticket-container {
+    background: 
+        /* Your custom watermark/logo */
+        url("{{ url_for('static', filename='tambola-logo.png') }}"),
+        /* Border pattern */
+        linear-gradient(45deg, transparent 95%, #e74c3c 95%),
+        linear-gradient(135deg, transparent 95%, #e74c3c 95%),
+        linear-gradient(225deg, transparent 95%, #e74c3c 95%),
+        linear-gradient(315deg, transparent 95%, #e74c3c 95%),
+        /* Main background */
+        linear-gradient(135deg, #fff5f5 0%, #fff 50%, #f0f8ff 100%);
+    background-size: 180px 180px, 20px 20px, 20px 20px, 20px 20px, 20px 20px, cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-blend-mode: overlay;
+    border: 3px solid #e74c3c;
+    border-radius: 15px;
+    padding: 25px;
+    margin: 20px auto;
+    max-width: 550px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    position: relative;
+    overflow: hidden;
+    opacity: 0.95;
+}     
         /* Decorative corners */
         .ticket-container::before,
         .ticket-container::after {
@@ -307,7 +310,6 @@
                 <li><strong>Top Line:</strong> Complete first row</li>
                 <li><strong>Middle Line:</strong> Complete second row</li>
                 <li><strong>Bottom Line:</strong> Complete third row</li>
-                <li><strong>Four Corners:</strong> Four corner numbers</li>
                 <li><strong>Full House:</strong> All 15 numbers</li>
             </ul>
             <p style="text-align: center; margin-top: 10px; font-weight: 600;">
