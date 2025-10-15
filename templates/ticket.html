@@ -257,9 +257,20 @@
 <body>
     <div class="ticket-container">
         <div class="player-info">
-            <h1>🎫 TAMBOLA TICKET</h1>
-            <h2>Player: {{ user_name }}</h2>
-        </div>
+    <h1>Welcome To TCI Indian Community Diwali Party 🎫 TAMBOLA TICKET</h1>
+    <h2>Player: {{ user_name }}</h2>
+    {% if ticket_code %}
+    <div style="margin-top: 10px; background: rgba(52, 152, 219, 0.2); padding: 8px 15px; border-radius: 20px; display: inline-block;">
+        <strong>Ticket Code: </strong>
+        <span style="font-family: monospace; font-size: 18px; font-weight: bold; letter-spacing: 2px; color: #3498db;">
+            {{ ticket_code }}
+        </span>
+    </div>
+    <p style="margin: 5px 0 0 0; font-size: 12px; opacity: 0.8;">
+        📝 Save this code to recover your ticket later
+    </p>
+    {% endif %}
+</div>
         
         {% if ticket %}
         <div class="ticket-count">🎯 Numbers: {{ total_numbers }}/15</div>
