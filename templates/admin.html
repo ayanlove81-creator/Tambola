@@ -311,7 +311,32 @@
             </div>
             {% endif %}
         </div>
-        
+        <!-- Prize Claims Section -->
+<div class="prizes-section">
+    <h2 class="section-title">🏆 Prize Claims</h2>
+    
+    <div class="prizes-summary">
+        {% set prizes = ['early_five', 'first_line', 'middle_line', 'bottom_line', 'full_house'] %}
+        {% for prize in prizes %}
+            {% set claim = prize_claims.get(prize) %}
+            <div class="prize-status">
+                <strong>{{ prize.replace('_', ' ').title() }}:</strong>
+                {% if claim %}
+                    {{ claim.name }} ({{ claim.ticket_code }}) at {{ claim.claimed_at }}
+                {% else %}
+                    <em>Not claimed yet</em>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+    
+    <div class="admin-actions">
+        <a href="/prizes" class="btn btn-success">🏆 View Public Prize Board</a>
+        <a href="/admin/prizes/reset" class="btn btn-danger" onclick="return confirm('Reset all prize claims?')">
+            🔄 Reset All Claims
+        </a>
+    </div>
+</div>
         <div class="admin-actions">
             <a href="/" class="btn btn-primary">🏠 Home</a>
             <a href="/stats" class="btn btn-success">📊 API Stats</a>
