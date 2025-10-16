@@ -9,18 +9,29 @@ def get_db_path():
     return 'tambola.db'
 
 def init_db():
-    db_path = get_db_path()
-    conn = sqlite3.connect(db_path)
+    conn = sqlite3.connect(get_db_path())
     c = conn.cursor()
-    
-    # Users table
     c.execute('''CREATE TABLE IF NOT EXISTS users
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   name TEXT NOT NULL,
                   device_id TEXT UNIQUE NOT NULL,
+                  ticket_code TEXT UNIQUE NOT NULL,
                   ticket_data TEXT,
                   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     
+    c.execute('''CREATE TABLE IF NOT EXISTS used_tickets
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  ticket_hash TEXT UNIQUE,
+                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    
+    # Add prizes table
+    c.execute('''CREATE TABLE IF NOT EXISTS prizes
+                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                  user_id INTEGER,
+                  ticket_code TEXT,
+                  prize_type TEXT NOT NULL,
+                  claimed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  FOREIGN KEY (user_id) REFERENCES users (id))''')
     conn.commit()
     conn.close()
 
