@@ -437,7 +437,6 @@ def show_ticket():
         return "Error loading ticket. Please register again."
 
 @app.route('/claim_prize', methods=['POST'])
-
 def claim_prize_route():
     if 'device_id' not in session:
         return redirect('/')
