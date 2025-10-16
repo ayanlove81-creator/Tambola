@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prize Claims - Tambola</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .prizes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            padding: 30px;
+        }
+        
+        .prize-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        .prize-card.claimed {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+        
+        .prize-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+        }
+        
+        .prize-name {
+            font-size: 1.5em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .winner-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+        }
+        
+        .winner-name {
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .ticket-code {
+            font-family: 'Courier New', monospace;
+            background: rgba(255,255,255,0.3);
+            padding: 5px 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+        
+        .claim-time {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+        
+        .unclaimed {
+            opacity: 0.7;
+        }
+        
+        .actions {
+            padding: 20px;
+            text-align: center;
+            background: #f8f9fa;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏆 Tambola Prize Claims</h1>
+            <p>First Come First Serve - Real-time Updates</p>
+        </div>
+        
+        <div class="prizes-grid">
+            {% for prize in prize_claims %}
+            <div class="prize-card claimed">
+                <div class="prize-icon">
+                    {% if prize.prize_type == 'early_five' %}5️⃣
+                    {% elif prize.prize_type == 'first_line' %}1️⃣
+                    {% elif prize.prize_type == 'middle_line' %}2️⃣
+                    {% elif prize.prize_type == 'bottom_line' %}3️⃣
+                    {% elif prize.prize_type == 'full_house' %}🏠
+                    {% else %}🎁{% endif %}
+                </div>
+                <div class="prize-name">
+                    {{ prize.prize_type.replace('_', ' ').title() }}
+                </div>
+                <div class="winner-info">
+                    <div class="winner-name">{{ prize.name }}</div>
+                    <div class="ticket-code">{{ prize.ticket_code }}</div>
+                    <div class="claim-time">Claimed: {{ prize.claimed_at }}</div>
+                </div>
+            </div>
+            {% else %}
+            <div class="prize-card unclaimed">
+                <div class="prize-icon">🎯</div>
+                <div class="prize-name">No Claims Yet</div>
+                <div class="winner-info">
+                    Be the first to claim a prize!
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="actions">
+            <a href="/" class="btn btn-primary">🎫 Get Your Ticket</a>
+            <a href="/admin" class="btn btn-success">⚙️ Admin Panel</a>
+            <button onclick="location.reload()" class="btn btn-primary">🔄 Refresh</button>
+        </div>
+    </div>
+</body>
+</html>
