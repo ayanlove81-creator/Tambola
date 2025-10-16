@@ -492,6 +492,76 @@ def admin():
                          total_tickets=total_tickets,
                          total_users=total_users,
                          recent_users=recent_users)
+
+def get_prize_claims():
+    """Get all prize claims with user details"""
+    db = get_db()
+    claims = db.execute('''
+        SELECT p.*, u.name 
+        FROM prizes p 
+        JOIN users u ON p.user_id = u.id 
+        ORDER BY p.claimed_at DESC
+    ''').fetchall()
+    db.close()
+    return claims
+
+def check_prize_claim(ticket_code, prize_type):
+    """Check if a prize type has already been claimed"""
+    db = get_db()
+    existing = db.execute(
+        'SELECT * FROM prizes WHERE prize_type = ? AND ticket_code = ?', 
+        [prize_type, ticket_code]
+    ).fetchone()
+    db.close()
+    return existing is not None
+
+def claim_prize(user_id, ticket_code, prize_type):
+    """Claim a prize for a user"""
+    # Check if this prize type is already claimed by anyone
+    db = get_db()
+    existing = db.execute(
+        'SELECT * FROM prizes WHERE prize_type = ?', 
+        [prize_type]
+    ).fetchone()
+    
+    if existing:
+        db.close()
+        return False, "This prize has already been claimed by someone else!"
+    
+    # Check if this user already claimed this prize type
+    user_existing = db.execute(
+        'SELECT * FROM prizes WHERE user_id = ? AND prize_type = ?', 
+        [user_id, prize_type]
+    ).fetchone()
+    
+    if user_existing:
+        db.close()
+        return False, "You have already claimed this prize!"
+    
+    # Claim the prize
+    try:
+        db.execute(
+            'INSERT INTO prizes (user_id, ticket_code, prize_type) VALUES (?, ?, ?)',
+            [user_id, ticket_code, prize_type]
+        )
+        db.commit()
+        db.close()
+        return True, "Prize claimed successfully!"
+    except Exception as e:
+        db.close()
+        return False, f"Error claiming prize: {str(e)}"
+
+def check_ticket_patterns(ticket, called_numbers):
+    """Check which patterns are completed on the ticket"""
+    patterns = {
+        'first_line': all(num == 0 or num in called_numbers for num in ticket[0]),
+        'middle_line': all(num == 0 or num in called_numbers for num in ticket[1]),
+        'bottom_line': all(num == 0 or num in called_numbers for num in ticket[2]),
+        'early_five': len([num for row in ticket for num in row if num != 0 and num in called_numbers]) >= 5,
+        'full_house': all(num == 0 or num in called_numbers for row in ticket for num in row)
+    }
+    return patterns
+    
 @app.route('/stats')
 def stats():
     db = get_db()
