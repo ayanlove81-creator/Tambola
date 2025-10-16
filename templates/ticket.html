@@ -549,7 +549,72 @@
             <a href="/recover" class="btn">🔍 Recover Ticket</a>
             <a href="/" class="btn">🏠 Home</a>
         </div>
+        <!-- Prize Claiming Section -->
+<div class="prize-section">
+    <h3>🎯 Prize Claims</h3>
+    
+    {% if session.get('claim_message') %}
+    <div class="alert alert-{{ 'success' if session.get('claim_success') else 'error' }}">
+        {{ session.get('claim_message') }}
+    </div>
+    {% endif %}
+    
+    <div class="prize-buttons">
+        <form method="POST" action="/claim_prize" style="display: inline;">
+            <input type="hidden" name="ticket_code" value="{{ ticket_code }}">
+            <input type="hidden" name="prize_type" value="early_five">
+            <button type="submit" class="btn btn-prize" 
+                   {{ 'disabled' if not patterns.early_five else '' }}>
+                🏆 Claim Early Five
+            </button>
+        </form>
         
+        <form method="POST" action="/claim_prize" style="display: inline;">
+            <input type="hidden" name="ticket_code" value="{{ ticket_code }}">
+            <input type="hidden" name="prize_type" value="first_line">
+            <button type="submit" class="btn btn-prize" 
+                   {{ 'disabled' if not patterns.first_line else '' }}>
+                🥇 Claim First Line
+            </button>
+        </form>
+        
+        <form method="POST" action="/claim_prize" style="display: inline;">
+            <input type="hidden" name="ticket_code" value="{{ ticket_code }}">
+            <input type="hidden" name="prize_type" value="middle_line">
+            <button type="submit" class="btn btn-prize" 
+                   {{ 'disabled' if not patterns.middle_line else '' }}>
+                🥈 Claim Middle Line
+            </button>
+        </form>
+        
+        <form method="POST" action="/claim_prize" style="display: inline;">
+            <input type="hidden" name="ticket_code" value="{{ ticket_code }}">
+            <input type="hidden" name="prize_type" value="bottom_line">
+            <button type="submit" class="btn btn-prize" 
+                   {{ 'disabled' if not patterns.bottom_line else '' }}>
+                🥉 Claim Bottom Line
+            </button>
+        </form>
+        
+        <form method="POST" action="/claim_prize" style="display: inline;">
+            <input type="hidden" name="ticket_code" value="{{ ticket_code }}">
+            <input type="hidden" name="prize_type" value="full_house">
+            <button type="submit" class="btn btn-prize" 
+                   {{ 'disabled' if not patterns.full_house else '' }}>
+                🏠 Claim Full House
+            </button>
+        </form>
+    </div>
+    
+    {% if user_prizes %}
+    <div class="my-prizes">
+        <h4>Your Claims:</h4>
+        {% for prize in user_prizes %}
+        <span class="prize-badge">{{ prize.prize_type.replace('_', ' ').title() }}</span>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
         <div class="instructions">
             <h3>🎪 Magical Tambola Rules:</h3>
             <ul>
