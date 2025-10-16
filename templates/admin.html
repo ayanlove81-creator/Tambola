@@ -3,40 +3,321 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Tambola</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Admin Console - Tambola Ticket System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .admin-header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .admin-header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .admin-header p {
+            opacity: 0.8;
+            font-size: 1.1em;
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .users-section {
+            padding: 30px;
+        }
+        
+        .section-title {
+            font-size: 1.8em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #ecf0f1;
+        }
+        
+        .users-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .users-table th {
+            background: #34495e;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-size: 0.9em;
+        }
+        
+        .users-table td {
+            padding: 15px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .users-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .ticket-code {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #e74c3c;
+            background: #fdf2f2;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 1.1em;
+        }
+        
+        .user-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .device-id {
+            font-family: 'Courier New', monospace;
+            font-size: 0.8em;
+            color: #7f8c8d;
+            word-break: break-all;
+        }
+        
+        .ticket-link {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .ticket-link:hover {
+            text-decoration: underline;
+        }
+        
+        .timestamp {
+            font-size: 0.9em;
+            color: #95a5a6;
+        }
+        
+        .numbers-count {
+            text-align: center;
+            font-weight: bold;
+            color: #27ae60;
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #7f8c8d;
+        }
+        
+        .empty-state i {
+            font-size: 3em;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        
+        .admin-actions {
+            padding: 20px 30px;
+            background: #ecf0f1;
+            border-top: 1px solid #bdc3c7;
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+        
+        .btn-success {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #219a52;
+        }
+        
+        .btn-danger {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+        
+        @media (max-width: 768px) {
+            .users-table {
+                display: block;
+                overflow-x: auto;
+            }
+            
+            .admin-header h1 {
+                font-size: 2em;
+            }
+            
+            .stats-container {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Admin Panel - Registered Players</h1>
-        <div class="stats">
-            <p>Total Players: {{ users|length }}</p>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>🎯 Tambola Admin Console</h1>
+            <p>Manage and monitor all user tickets</p>
         </div>
         
-        <div class="players-list">
-            {% for user in users %}
-            <div class="player-card">
-                <h3>{{ user.name }}</h3>
-                <p><strong>Device ID:</strong> {{ user.device_id }}</p>
-                <p><strong>Registered:</strong> {{ user.created_at }}</p>
-                <div class="ticket-preview">
-                    <table class="tambola-ticket small">
-                        {% for row in user.ticket %}
-                        <tr>
-                            {% for number in row %}
-                            <td class="{% if number == 0 %}empty{% else %}number{% endif %}">
-                                {% if number != 0 %}{{ number }}{% endif %}
-                            </td>
-                            {% endfor %}
-                        </tr>
-                        {% endfor %}
-                    </table>
-                </div>
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-number">{{ total_users }}</div>
+                <div class="stat-label">Total Users</div>
             </div>
-            {% endfor %}
+            <div class="stat-card">
+                <div class="stat-number">{{ total_tickets }}</div>
+                <div class="stat-label">Unique Tickets</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ recent_users }}</div>
+                <div class="stat-label">Recent (24h)</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number">{{ users|length }}</div>
+                <div class="stat-label">Active Tickets</div>
+            </div>
         </div>
         
-        <a href="{{ url_for('index') }}" class="btn">Back to Home</a>
+        <div class="users-section">
+            <h2 class="section-title">User Tickets</h2>
+            
+            {% if users %}
+            <table class="users-table">
+                <thead>
+                    <tr>
+                        <th>Ticket Code</th>
+                        <th>User Name</th>
+                        <th>Numbers</th>
+                        <th>Device ID</th>
+                        <th>Registered</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in users %}
+                    <tr>
+                        <td>
+                            <span class="ticket-code">{{ user.ticket_code }}</span>
+                        </td>
+                        <td>
+                            <span class="user-name">{{ user.name }}</span>
+                        </td>
+                        <td class="numbers-count">{{ user.numbers_count }}/15</td>
+                        <td>
+                            <span class="device-id" title="{{ user.device_id }}">
+                                {{ user.device_id[:8] }}...
+                            </span>
+                        </td>
+                        <td>
+                            <span class="timestamp">{{ user.created_at }}</span>
+                        </td>
+                        <td>
+                            <a href="{{ user.ticket_url }}" class="ticket-link" target="_blank">
+                                View Ticket ↗
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">
+                <div>📭</div>
+                <h3>No users registered yet</h3>
+                <p>Users will appear here once they register for tickets</p>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="admin-actions">
+            <a href="/" class="btn btn-primary">🏠 Home</a>
+            <a href="/stats" class="btn btn-success">📊 API Stats</a>
+            <a href="/health" class="btn btn-primary">❤️ Health Check</a>
+            <button onclick="location.reload()" class="btn btn-primary">🔄 Refresh</button>
+        </div>
     </div>
 </body>
 </html>
