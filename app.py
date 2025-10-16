@@ -429,26 +429,46 @@ def recover_ticket():
 @app.route('/admin')
 def admin():
     db = get_db()
+    
+    # Get all users with their tickets
     users = db.execute('SELECT * FROM users ORDER BY created_at DESC').fetchall()
+    
+    # Get statistics
     total_tickets = db.execute('SELECT COUNT(*) as count FROM used_tickets').fetchone()['count']
+    total_users = db.execute('SELECT COUNT(*) as count FROM users').fetchone()['count']
+    
+    # Get recent registrations (last 24 hours)
+    recent_users = db.execute(
+        'SELECT COUNT(*) as count FROM users WHERE created_at >= datetime("now", "-1 day")'
+    ).fetchone()['count']
+    
     db.close()
     
     user_list = []
     for user in users:
         try:
             ticket_data = json.loads(user['ticket_data'])
+            numbers_count = count_ticket_numbers(ticket_data)
+            
             user_list.append({
+                'id': user['id'],
                 'name': user['name'],
                 'ticket': ticket_data,
                 'ticket_code': user['ticket_code'],
+                'device_id': user['device_id'],
                 'created_at': user['created_at'],
-                'numbers_count': count_ticket_numbers(ticket_data)
+                'numbers_count': numbers_count,
+                'ticket_url': f"/ticket?code={user['ticket_code']}"
             })
-        except:
+        except Exception as e:
+            print(f"Error processing user {user['id']}: {e}")
             continue
     
-    return render_template('admin.html', users=user_list, total_tickets=total_tickets)
-
+    return render_template('admin.html', 
+                         users=user_list, 
+                         total_tickets=total_tickets,
+                         total_users=total_users,
+                         recent_users=recent_users)
 @app.route('/stats')
 def stats():
     db = get_db()
