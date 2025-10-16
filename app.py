@@ -401,6 +401,24 @@ def show_ticket():
         total_numbers = count_ticket_numbers(ticket)
         current_time = datetime.now()
         
+        # Get called numbers from session or query parameter
+        called_numbers = session.get('called_numbers', [])
+        called_numbers_param = request.args.get('called_numbers', '')
+        if called_numbers_param:
+            called_numbers = [int(num) for num in called_numbers_param.split(',') if num.isdigit()]
+            session['called_numbers'] = called_numbers
+        
+        # Check completed patterns
+        patterns = check_ticket_patterns(ticket, called_numbers)
+        
+        # Get user's claimed prizes
+        db = get_db()
+        user_prizes = db.execute(
+            'SELECT prize_type, claimed_at FROM prizes WHERE user_id = ? ORDER BY claimed_at DESC',
+            [user['id']]
+        ).fetchall()
+        db.close()
+        
         # Store in session for future access
         session['device_id'] = user['device_id']
         session['ticket_code'] = user['ticket_code']
@@ -410,11 +428,49 @@ def show_ticket():
                              user_name=user['name'], 
                              total_numbers=total_numbers,
                              ticket_code=user['ticket_code'],
+                             called_numbers=called_numbers,
+                             patterns=patterns,
+                             user_prizes=user_prizes,
                              now=current_time)
     except Exception as e:
         print(f"Error loading ticket: {e}")
         return "Error loading ticket. Please register again."
 
+@app.route('/claim_prize', methods=['POST'])
+
+def claim_prize_route():
+    if 'device_id' not in session:
+        return redirect('/')
+    
+    ticket_code = request.form.get('ticket_code')
+    prize_type = request.form.get('prize_type')
+    
+    if not ticket_code or not prize_type:
+        return redirect('/ticket')
+    
+    db = get_db()
+    user = db.execute('SELECT * FROM users WHERE ticket_code = ? AND device_id = ?', 
+                     [ticket_code, session['device_id']]).fetchone()
+    
+    if not user:
+        db.close()
+        return redirect('/ticket')
+    
+    success, message = claim_prize(user['id'], ticket_code, prize_type)
+    db.close()
+    
+    # Store message in session to display on redirect
+    session['claim_message'] = message
+    session['claim_success'] = success
+    
+    return redirect(f'/ticket?code={ticket_code}')
+    
+@app.route('/prizes')
+def show_prizes():
+    """Public page showing all prize claims"""
+    prize_claims = get_prize_claims()
+    return render_template('prizes.html', prize_claims=prize_claims)
+    
 @app.route('/recover', methods=['GET', 'POST'])
 def recover_ticket():
     if request.method == 'POST':
