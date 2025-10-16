@@ -425,7 +425,30 @@ def recover_ticket():
             return render_template('recover.html', error='Please enter your ticket code')
     
     return render_template('recover.html')
-
+    
+@app.route('/admin/export')
+def export_data():
+    """Export user data as JSON"""
+    db = get_db()
+    users = db.execute('SELECT * FROM users ORDER BY created_at DESC').fetchall()
+    db.close()
+    
+    export_data = []
+    for user in users:
+        try:
+            ticket_data = json.loads(user['ticket_data'])
+            export_data.append({
+                'name': user['name'],
+                'ticket_code': user['ticket_code'],
+                'device_id': user['device_id'],
+                'created_at': user['created_at'],
+                'ticket_data': ticket_data
+            })
+        except:
+            continue
+    
+    return json.dumps(export_data, indent=2)
+    
 @app.route('/admin')
 def admin():
     db = get_db()
