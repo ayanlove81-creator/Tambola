@@ -927,7 +927,7 @@ def caller_dashboard():
                          total_called=len(called_numbers),
                          remaining=90 - len(called_numbers))
 
-app.route('/call_number', methods=['POST'])
+@app.route('/call_number', methods=['POST'])
 def call_number_route():
     """Call a number (manual or auto)"""
     try:
@@ -940,13 +940,9 @@ def call_number_route():
             number, message = call_number(number)  # Manual call
         
         if number:
-            # Get audio/text for the number with better error handling
-            try:
-                number_text = get_number_text(number)
-            except Exception as e:
-                print(f"Error getting number text for {number}: {e}")
-                number_text = str(number)
-                
+            # Use simple number text to avoid errors
+            number_text = str(number)
+            
             return jsonify({
                 'success': True,
                 'number': number,
