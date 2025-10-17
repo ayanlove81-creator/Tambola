@@ -11,6 +11,7 @@ import string
 from datetime import datetime
 from flask import Flask, render_template, request, session, redirect, url_for
 from flask import send_from_directory
+from flask import jsonify
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-key-123')
@@ -342,31 +343,45 @@ def count_ticket_numbers(ticket):
             print(f"ERROR: Column {i} has {count} numbers (max 3)")
     
     return total
+    
 def claim_prize(user_id, ticket_code, prize_type, user_name):
     """Submit a prize claim for admin approval"""
-    # Check if this prize type is already approved
-    db = get_db()
-    existing_approved = db.execute(
-        'SELECT * FROM prizes WHERE prize_type = ? AND status = "approved"', 
-        [prize_type]
-    ).fetchone()
-    
-    if existing_approved:
+    try:
+        db = get_db()
+        
+        # Check if this prize type is already approved
+        existing_approved = db.execute(
+            'SELECT * FROM prizes WHERE prize_type = ? AND status = "approved"', 
+            [prize_type]
+        ).fetchone()
+        
+        if existing_approved:
+            db.close()
+            return False, "This prize has already been claimed and approved!"
+        
+        # Check if user already has a pending or approved claim for this prize
+        user_existing = db.execute(
+            'SELECT * FROM prizes WHERE user_id = ? AND prize_type = ? AND status IN ("pending", "approved")', 
+            [user_id, prize_type]
+        ).fetchone()
+        
+        if user_existing:
+            db.close()
+            if user_existing['status'] == 'pending':
+                return False, "You already have a pending claim for this prize!"
+            else:
+                return False, "You have already claimed this prize!"
+        
+        # Submit the claim for approval
+        db.execute(
+            'INSERT INTO prizes (user_id, ticket_code, user_name, prize_type, status) VALUES (?, ?, ?, ?, "pending")',
+            [user_id, ticket_code, user_name, prize_type]
+        )
+        db.commit()
         db.close()
-        return False, "This prize has already been claimed and approved!"
-    
-    # Check if user already has a pending or approved claim for this prize
-    user_existing = db.execute(
-        'SELECT * FROM prizes WHERE user_id = ? AND prize_type = ? AND status IN ("pending", "approved")', 
-        [user_id, prize_type]
-    ).fetchone()
-    
-    if user_existing:
-        db.close()
-        if user_existing['status'] == 'pending':
-            return False, "You already have a pending claim for this prize!"
-        else:
-            return False, "You have already claimed this prize!"
+        return True, "Prize claim submitted for admin approval!"
+    except Exception as e:
+        return False, f"Error submitting claim: {str(e)}"
     
     # Submit the claim for approval
     try:
