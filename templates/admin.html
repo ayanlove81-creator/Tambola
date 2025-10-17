@@ -311,31 +311,89 @@
             </div>
             {% endif %}
         </div>
-        <!-- Prize Claims Section -->
-<div class="prizes-section">
-    <h2 class="section-title">🏆 Prize Claims</h2>
+<!-- Pending Claims Section -->
+<div class="pending-claims-section">
+    <h2 class="section-title">⏳ Pending Prize Claims</h2>
     
-    <div class="prizes-summary">
-        {% set prizes = ['early_five', 'first_line', 'middle_line', 'bottom_line', 'full_house'] %}
-        {% for prize in prizes %}
-            {% set claim = prize_claims.get(prize) %}
-            <div class="prize-status">
-                <strong>{{ prize.replace('_', ' ').title() }}:</strong>
-                {% if claim %}
-                    {{ claim.name }} ({{ claim.ticket_code }}) at {{ claim.claimed_at }}
-                {% else %}
-                    <em>Not claimed yet</em>
-                {% endif %}
-            </div>
-        {% endfor %}
+    {% if pending_claims %}
+    <div class="claims-table">
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Ticket Code</th>
+                    <th>Prize Type</th>
+                    <th>Claimed At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for claim in pending_claims %}
+                <tr>
+                    <td class="user-name">{{ claim.name }}</td>
+                    <td><span class="ticket-code">{{ claim.ticket_code }}</span></td>
+                    <td><strong>{{ claim.prize_type.replace('_', ' ').title() }}</strong></td>
+                    <td class="timestamp">{{ claim.claimed_at }}</td>
+                    <td>
+                        <a href="/admin/approve_claim/{{ claim.id }}" class="btn btn-success" 
+                           onclick="return confirm('Approve this claim for {{ claim.name }}?')">
+                            ✅ Approve
+                        </a>
+                        <a href="/admin/reject_claim/{{ claim.id }}" class="btn btn-danger" 
+                           onclick="return confirm('Reject this claim for {{ claim.name }}?')">
+                            ❌ Reject
+                        </a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+    {% else %}
+    <div class="empty-state">
+        <div>✅</div>
+        <h3>No pending claims</h3>
+        <p>All claims have been processed</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Approved Claims Section -->
+<div class="approved-claims-section">
+    <h2 class="section-title">✅ Approved Prize Claims</h2>
     
-    <div class="admin-actions">
-        <a href="/prizes" class="btn btn-success">🏆 View Public Prize Board</a>
-        <a href="/admin/prizes/reset" class="btn btn-danger" onclick="return confirm('Reset all prize claims?')">
-            🔄 Reset All Claims
-        </a>
+    {% if approved_claims %}
+    <div class="claims-table">
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Ticket Code</th>
+                    <th>Prize Type</th>
+                    <th>Approved At</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for claim in approved_claims %}
+                <tr>
+                    <td class="user-name">{{ claim.name }}</td>
+                    <td><span class="ticket-code">{{ claim.ticket_code }}</span></td>
+                    <td><strong>{{ claim.prize_type.replace('_', ' ').title() }}</strong></td>
+                    <td class="timestamp">{{ claim.approved_at }}</td>
+                    <td><span class="status-approved">✅ Approved</span></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+    {% else %}
+    <div class="empty-state">
+        <div>🏆</div>
+        <h3>No approved claims yet</h3>
+        <p>Approve some claims to see winners here</p>
+    </div>
+    {% endif %}
 </div>
         <div class="admin-actions">
             <a href="/" class="btn btn-primary">🏠 Home</a>
