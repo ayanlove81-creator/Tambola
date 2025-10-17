@@ -199,6 +199,83 @@
             text-align: center;
             background: #ecf0f1;
         }
+        .speed-controls {
+    padding: 20px;
+    background: #34495e;
+    color: white;
+    text-align: center;
+    margin: 20px 0;
+    border-radius: 10px;
+}
+
+.speed-slider-container {
+    margin: 15px 0;
+}
+
+.speed-slider {
+    width: 80%;
+    max-width: 400px;
+    height: 8px;
+    border-radius: 5px;
+    background: #ddd;
+    outline: none;
+    margin: 10px 0;
+}
+
+.control-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
+
+.btn-pause {
+    background: #f39c12;
+    color: white;
+}
+
+.btn-resume {
+    background: #27ae60;
+    color: white;
+}
+
+.btn-skip {
+    background: #3498db;
+    color: white;
+}
+
+.announcement-section {
+    padding: 30px;
+    background: linear-gradient(135deg, #9b59b6, #8e44ad);
+    color: white;
+    text-align: center;
+    margin: 20px 0;
+    border-radius: 15px;
+}
+
+.announcement-display {
+    font-size: 1.5em;
+}
+
+.announced-number {
+    font-size: 4em;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.announcement-text {
+    font-size: 1.8em;
+    margin-bottom: 10px;
+    opacity: 0.9;
+}
+
+.pronunciation {
+    font-size: 2.5em;
+    font-weight: bold;
+    color: #FFD700;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
     </style>
 </head>
 <body>
@@ -243,7 +320,34 @@
                 📢 Call This Number
             </button>
         </div>
-        
+        <!-- Add this section after the manual-input section in caller.html -->
+<div class="speed-controls">
+    <h3>🎚️ Speed Control</h3>
+    <div class="speed-slider-container">
+        <label>Call Interval: <span id="speed-value">10</span> seconds</label>
+        <input type="range" id="speed-slider" min="3" max="30" value="10" class="speed-slider">
+    </div>
+    <div class="control-buttons">
+        <button class="btn btn-pause" onclick="pauseAutoCall()" id="pause-btn" style="display: none;">
+            ⏸️ Pause
+        </button>
+        <button class="btn btn-resume" onclick="resumeAutoCall()" id="resume-btn">
+            ▶️ Resume
+        </button>
+        <button class="btn btn-skip" onclick="skipToNext()">
+            ⏭️ Skip Next
+        </button>
+    </div>
+</div>
+
+<!-- Enhanced announcement display -->
+<div class="announcement-section">
+    <div class="announcement-display" id="announcement-display">
+        <div class="announced-number" id="announced-number">--</div>
+        <div class="announcement-text" id="announcement-text">Ready for announcement</div>
+        <div class="pronunciation" id="pronunciation-display"></div>
+    </div>
+</div>
         <div class="auto-call-controls">
             <label>
                 <input type="checkbox" id="auto-call-toggle" onchange="toggleAutoCall()">
@@ -279,6 +383,190 @@
     <script>
         let currentNumber = null;
         let autoCallInterval = null;
+        let autoCallInterval = null;
+        let currentSpeed = 10; // seconds
+        let isPaused = false;
+        let skipRequested = false;
+
+function updateAnnouncement(number, numberText) {
+    document.getElementById('announced-number').textContent = number;
+    document.getElementById('announcement-text').textContent = `Number Called: ${number}`;
+    document.getElementById('pronunciation-display').textContent = numberText;
+    
+    // Add animation
+    const announcement = document.getElementById('announcement-display');
+    announcement.style.animation = 'none';
+    setTimeout(() => {
+        announcement.style.animation = 'pulse 0.5s ease';
+    }, 10);
+}
+
+function setCallSpeed(seconds) {
+    currentSpeed = seconds;
+    document.getElementById('speed-value').textContent = seconds;
+    
+    // Restart auto-call with new speed if it's running
+    if (autoCallInterval && !isPaused) {
+        clearInterval(autoCallInterval);
+        startAutoCall();
+    }
+}
+
+function pauseAutoCall() {
+    if (autoCallInterval) {
+        clearInterval(autoCallInterval);
+        autoCallInterval = null;
+        isPaused = true;
+        document.getElementById('pause-btn').style.display = 'none';
+        document.getElementById('resume-btn').style.display = 'inline-block';
+        document.getElementById('auto-call-status').textContent = 'Auto call paused';
+    }
+}
+
+function resumeAutoCall() {
+    if (isPaused) {
+        startAutoCall();
+        isPaused = false;
+        document.getElementById('pause-btn').style.display = 'inline-block';
+        document.getElementById('resume-btn').style.display = 'none';
+    }
+}
+
+function skipToNext() {
+    skipRequested = true;
+    if (isPaused) {
+        // If paused, call one number immediately
+        callNumber('auto');
+    }
+    // If auto-call is running, it will handle the skip in the next iteration
+}
+
+function startAutoCall() {
+    if (autoCallInterval) {
+        clearInterval(autoCallInterval);
+    }
+    
+    autoCallInterval = setInterval(() => {
+        if (!isPaused) {
+            callNumber('auto');
+        }
+    }, currentSpeed * 1000);
+    
+    document.getElementById('auto-call-status').textContent = 
+        `Auto call enabled - Next call in ${currentSpeed} seconds`;
+}
+
+// Modified callNumber function to handle announcements
+function callNumber(mode) {
+    let formData = new FormData();
+    
+    if (mode === 'manual') {
+        const manualNum = document.getElementById('manual-number').value;
+        if (!manualNum || manualNum < 1 || manualNum > 90) {
+            alert('Please enter a number between 1 and 90');
+            return;
+        }
+        formData.append('number', manualNum);
+    } else {
+        formData.append('auto', 'true');
+    }
+    
+    fetch('/call_number', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            currentNumber = data.number;
+            updateDisplay(data);
+            updateAnnouncement(data.number, data.number_text);
+            playBeep();
+            updateCalledNumbers();
+            
+            // Clear manual input after successful call
+            if (mode === 'manual') {
+                document.getElementById('manual-number').value = '';
+            }
+            
+            skipRequested = false;
+        } else {
+            alert(data.message);
+            if (data.message.includes("All numbers have been called")) {
+                stopAutoCall();
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error calling number');
+    });
+}
+
+// Modified toggleAutoCall function
+function toggleAutoCall() {
+    const toggle = document.getElementById('auto-call-toggle');
+    const status = document.getElementById('auto-call-status');
+    
+    if (toggle.checked) {
+        isPaused = false;
+        startAutoCall();
+        document.getElementById('pause-btn').style.display = 'inline-block';
+        document.getElementById('resume-btn').style.display = 'none';
+    } else {
+        stopAutoCall();
+    }
+}
+
+function stopAutoCall() {
+    if (autoCallInterval) {
+        clearInterval(autoCallInterval);
+        autoCallInterval = null;
+    }
+    isPaused = false;
+    document.getElementById('auto-call-status').textContent = 'Auto call disabled';
+    document.getElementById('pause-btn').style.display = 'none';
+    document.getElementById('resume-btn').style.display = 'none';
+}
+
+// Speed slider event listener
+document.getElementById('speed-slider').addEventListener('input', function(e) {
+    const speed = parseInt(e.target.value);
+    setCallSpeed(speed);
+});
+
+// Enhanced speech function with better pronunciation
+function speakNumber() {
+    if (!currentNumber) return;
+    
+    const numberText = document.getElementById('pronunciation-display').textContent;
+    const fullAnnouncement = `Number ${currentNumber} - ${numberText}`;
+    
+    const utterance = new SpeechSynthesisUtterance(fullAnnouncement);
+    utterance.rate = 0.8;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    
+    // Use a female voice if available
+    const voices = window.speechSynthesis.getVoices();
+    const femaleVoice = voices.find(voice => 
+        voice.name.includes('Female') || 
+        voice.name.includes('woman') ||
+        voice.name.includes('Samantha') ||
+        voice.lang.includes('en')
+    );
+    
+    if (femaleVoice) {
+        utterance.voice = femaleVoice;
+    }
+    
+    window.speechSynthesis.speak(utterance);
+}
+
+// Initialize speed control
+document.addEventListener('DOMContentLoaded', function() {
+    setCallSpeed(10);
+});
         
         function playBeep() {
             if (!document.getElementById('sound-toggle').checked) return;
