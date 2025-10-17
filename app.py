@@ -927,32 +927,45 @@ def caller_dashboard():
                          total_called=len(called_numbers),
                          remaining=90 - len(called_numbers))
 
-@app.route('/call_number', methods=['POST'])
+app.route('/call_number', methods=['POST'])
 def call_number_route():
     """Call a number (manual or auto)"""
-    number = request.form.get('number', type=int)
-    auto = request.form.get('auto') == 'true'
-    
-    if auto:
-        number, message = call_number()  # Auto-call
-    else:
-        number, message = call_number(number)  # Manual call
-    
-    if number:
-        # Get audio/text for the number
-        number_text = get_number_text(number)
-        return jsonify({
-            'success': True,
-            'number': number,
-            'number_text': number_text,
-            'message': message,
-            'total_called': len(get_called_numbers())
-        })
-    else:
+    try:
+        number = request.form.get('number', type=int)
+        auto = request.form.get('auto') == 'true'
+        
+        if auto:
+            number, message = call_number()  # Auto-call
+        else:
+            number, message = call_number(number)  # Manual call
+        
+        if number:
+            # Get audio/text for the number with better error handling
+            try:
+                number_text = get_number_text(number)
+            except Exception as e:
+                print(f"Error getting number text for {number}: {e}")
+                number_text = str(number)
+                
+            return jsonify({
+                'success': True,
+                'number': number,
+                'number_text': number_text,
+                'message': message,
+                'total_called': len(get_called_numbers())
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': message
+            })
+    except Exception as e:
+        print(f"Error in call_number_route: {e}")
         return jsonify({
             'success': False,
-            'message': message
+            'message': f"Server error: {str(e)}"
         })
+        
 
 @app.route('/called_numbers')
 def get_called_numbers_route():
@@ -1042,28 +1055,38 @@ def reset_called_numbers():
     return True
 
 def get_number_text(number):
-    """Convert number to spoken text"""
-    if number <= 90:
+    """Convert number to spoken text - improved version"""
+    try:
+        if number < 1 or number > 90:
+            return str(number)
+            
+        # Handle numbers 1-19
+        if number <= 19:
+            numbers_1_19 = [
+                "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
+                "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", 
+                "sixteen", "seventeen", "eighteen", "nineteen"
+            ]
+            return numbers_1_19[number]
+        
+        # Handle numbers 20-90
         tens = number // 10
         units = number % 10
         
-        if number in [11, 12]:
-            return f"eleven" if number == 11 else "twelve"
-        elif tens == 0:
-            return ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"][units]
-        elif tens == 1:
-            return ["ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"][units]
-        elif tens in [2, 3, 4, 5, 8]:
-            tens_words = ["twenty", "thirty", "forty", "fifty", "eighty"]
-            word = tens_words[tens-2]
-            if units > 0:
-                word += " " + ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"][units-1]
-            return word
-        elif tens == 9:
-            return "ninety" if units == 0 else f"ninety {['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'][units-1]}"
-        else:
-            return str(number)
-    return str(number)
+        tens_words = ["twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
+        
+        if tens >= 2 and tens <= 9:
+            tens_word = tens_words[tens - 2]
+            if units == 0:
+                return tens_word
+            else:
+                units_words = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
+                return f"{tens_word} {units_words[units]}"
+        
+        return str(number)
+    except Exception as e:
+        print(f"Error in get_number_text for {number}: {e}")
+        return str(number)
     
 @app.route('/health')
 def health():
