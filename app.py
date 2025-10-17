@@ -1004,43 +1004,63 @@ def get_called_numbers():
     ).fetchall()
     db.close()
     return [row['number'] for row in numbers]
-
-def call_number(number=None):
+    
+@app.route('/dashboard')
+def number_dashboard():
+    """Big screen number dashboard"""
+    called_numbers = get_called_numbers()
+    recent_numbers = called_numbers[-10:] if called_numbers else []
+    
+    # Get last called number
+    last_number = None
+    if called_numbers:
+        last_number = called_numbers[-1]
+    
+    return render_template('dashboard.html',
+                         called_numbers=called_numbers,
+                         recent_numbers=recent_numbers,
+                         last_number=last_number,
+                         total_called=len(called_numbers),
+                         remaining=90 - len(called_numbers))
+    
+@app.route('/call_number', methods=['POST'])
+def call_number_route():
     """Call a number (manual or auto)"""
-    db = get_db()
-    
-    if number is None:
-        # Auto-call: get next random number
-        called_numbers = get_called_numbers()
-        available_numbers = [n for n in ALL_TAMBOLA_NUMBERS if n not in called_numbers]
-        
-        if not available_numbers:
-            db.close()
-            return None, "All numbers have been called!"
-        
-        number = random.choice(available_numbers)
-    
-    # Check if number already called
-    existing = db.execute(
-        'SELECT * FROM called_numbers WHERE number = ?', [number]
-    ).fetchone()
-    
-    if existing:
-        db.close()
-        return None, f"Number {number} has already been called!"
-    
-    # Add the number
     try:
-        db.execute(
-            'INSERT INTO called_numbers (number) VALUES (?)',
-            [number]
-        )
-        db.commit()
-        db.close()
-        return number, f"Number {number} called successfully!"
+        number = request.form.get('number', type=int)
+        auto = request.form.get('auto') == 'true'
+        
+        if auto:
+            number, message = call_number()  # Auto-call
+        else:
+            if number is None:
+                return jsonify({
+                    'success': False,
+                    'message': "Please provide a number"
+                })
+            number, message = call_number(number)  # Manual call
+        
+        if number:
+            number_text = get_number_text(number)
+            
+            return jsonify({
+                'success': True,
+                'number': number,
+                'number_text': number_text,
+                'message': message,
+                'total_called': len(get_called_numbers())
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': message
+            })
     except Exception as e:
-        db.close()
-        return None, f"Error calling number: {str(e)}"
+        print(f"Error in call_number_route: {e}")
+        return jsonify({
+            'success': False,
+            'message': f"Server error: {str(e)}"
+        })
 
 def reset_called_numbers():
     """Reset all called numbers"""
@@ -1051,16 +1071,38 @@ def reset_called_numbers():
     return True
 
 def get_number_text(number):
-    """Simple and reliable number pronunciation"""
-    try:
-        # Handle numbers 1-90
-        if 1 <= number <= 90:
-            # Simple approach - just return the number as string
-            # You can add proper pronunciation later
-            return str(number)
-        return str(number)
-    except:
-        return str(number)
+    """Convert number to text pronunciation"""
+    if not number:
+        return ""
+    
+    # Simple number to text mapping for common numbers
+    number_words = {
+        1: "One", 2: "Two", 3: "Three", 4: "Four", 5: "Five",
+        6: "Six", 7: "Seven", 8: "Eight", 9: "Nine", 10: "Ten",
+        11: "Eleven", 12: "Twelve", 13: "Thirteen", 14: "Fourteen", 15: "Fifteen",
+        16: "Sixteen", 17: "Seventeen", 18: "Eighteen", 19: "Nineteen", 20: "Twenty",
+        90: "Ninety"
+    }
+    
+    if number in number_words:
+        return number_words[number]
+    
+    # For numbers 21-89, handle tens and units
+    if 21 <= number <= 89:
+        tens = number // 10
+        units = number % 10
+        
+        tens_words = {
+            2: "Twenty", 3: "Thirty", 4: "Forty", 5: "Fifty",
+            6: "Sixty", 7: "Seventy", 8: "Eighty"
+        }
+        
+        if units == 0:
+            return tens_words[tens]
+        else:
+            return f"{tens_words[tens]} {number_words[units]}"
+    
+    return str(number)
     
 @app.route('/health')
 def health():
