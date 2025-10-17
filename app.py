@@ -567,7 +567,7 @@ def show_ticket():
     if not user:
         return render_template('recover.html', error='Invalid ticket code')
     
-   try:
+    try:
         ticket = json.loads(user['ticket_data'])
         total_numbers = count_ticket_numbers(ticket)
         current_time = datetime.now()
@@ -615,22 +615,7 @@ def show_ticket():
     except Exception as e:
         print(f"Error loading ticket: {e}")
         return "Error loading ticket. Please register again."
-        
-        return render_template('ticket.html', 
-                             ticket=ticket, 
-                             user_name=user['name'], 
-                             total_numbers=total_numbers,
-                             ticket_code=user['ticket_code'],
-                             called_numbers=called_numbers,
-                             patterns=patterns,
-                             user_prizes=user_prizes,
-                             now=current_time)
-    except Exception as e:
-        print(f"Error loading ticket: {e}")
-        return "Error loading ticket. Please register again."
-
-
-    
+   
 @app.route('/prizes')
 def show_prizes():
     """Public page showing all prize claims"""
