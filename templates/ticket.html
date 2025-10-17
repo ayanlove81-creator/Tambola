@@ -642,24 +642,7 @@
             <a href="/recover" class="btn">🔍 Recover Ticket</a>
             <a href="/" class="btn">🏠 Home</a>
         </div>
-      
-        
-    <!-- Winners Board -->
-    <div class="winners-board">
-        <h4>🏆 Approved Winners:</h4>
-        {% if approved_winners %}
-            {% for winner in approved_winners %}
-            <div class="winner-item">
-                <strong>{{ winner.prize_type.replace('_', ' ').title() }}:</strong>
-                {{ winner.user_name }} ({{ winner.ticket_code }})
-            </div>
-            {% endfor %}
-        {% else %}
-            <div>No winners approved yet</div>
-        {% endif %}
-    </div>
-</div>
-    
+          
         <div class="instructions">
             <h3>🎪 Magical Tambola Rules:</h3>
             <ul>
