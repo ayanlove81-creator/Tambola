@@ -411,7 +411,7 @@ def show_ticket():
     if not user:
         return render_template('recover.html', error='Invalid ticket code')
     
-    try:
+   try:
         ticket = json.loads(user['ticket_data'])
         total_numbers = count_ticket_numbers(ticket)
         current_time = datetime.now()
@@ -426,17 +426,39 @@ def show_ticket():
         # Check completed patterns
         patterns = check_ticket_patterns(ticket, called_numbers)
         
-        # Get user's claimed prizes
+        # Get user's prize claims
         db = get_db()
         user_prizes = db.execute(
-            'SELECT prize_type, claimed_at FROM prizes WHERE user_id = ? ORDER BY claimed_at DESC',
+            'SELECT prize_type, status, claimed_at FROM prizes WHERE user_id = ? ORDER BY claimed_at DESC',
             [user['id']]
         ).fetchall()
+        
+        # Get all approved winners to show on ticket
+        approved_winners = db.execute('''
+            SELECT prize_type, user_name, ticket_code 
+            FROM prizes 
+            WHERE status = "approved" 
+            ORDER BY approved_at DESC
+        ''').fetchall()
         db.close()
         
         # Store in session for future access
         session['device_id'] = user['device_id']
         session['ticket_code'] = user['ticket_code']
+        
+        return render_template('ticket.html', 
+                             ticket=ticket, 
+                             user_name=user['name'], 
+                             total_numbers=total_numbers,
+                             ticket_code=user['ticket_code'],
+                             called_numbers=called_numbers,
+                             patterns=patterns,
+                             user_prizes=user_prizes,
+                             approved_winners=approved_winners,
+                             now=current_time)
+    except Exception as e:
+        print(f"Error loading ticket: {e}")
+        return "Error loading ticket. Please register again."
         
         return render_template('ticket.html', 
                              ticket=ticket, 
@@ -530,10 +552,9 @@ def admin():
     total_tickets = db.execute('SELECT COUNT(*) as count FROM used_tickets').fetchone()['count']
     total_users = db.execute('SELECT COUNT(*) as count FROM users').fetchone()['count']
     
-    # Get recent registrations (last 24 hours)
-    recent_users = db.execute(
-        'SELECT COUNT(*) as count FROM users WHERE created_at >= datetime("now", "-1 day")'
-    ).fetchone()['count']
+    # Get prize claims
+    pending_claims = get_pending_claims()
+    approved_claims = get_approved_claims()
     
     db.close()
     
@@ -541,8 +562,6 @@ def admin():
     for user in users:
         try:
             ticket_data = json.loads(user['ticket_data'])
-            numbers_count = count_ticket_numbers(ticket_data)
-            
             user_list.append({
                 'id': user['id'],
                 'name': user['name'],
@@ -550,7 +569,7 @@ def admin():
                 'ticket_code': user['ticket_code'],
                 'device_id': user['device_id'],
                 'created_at': user['created_at'],
-                'numbers_count': numbers_count,
+                'numbers_count': count_ticket_numbers(ticket_data),
                 'ticket_url': f"/ticket?code={user['ticket_code']}"
             })
         except Exception as e:
@@ -561,7 +580,8 @@ def admin():
                          users=user_list, 
                          total_tickets=total_tickets,
                          total_users=total_users,
-                         recent_users=recent_users)
+                         pending_claims=pending_claims,
+                         approved_claims=approved_claims)
 
 def get_prize_claims():
     """Get all prize claims with user details"""
