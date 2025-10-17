@@ -38,7 +38,10 @@ def init_db():
                   FOREIGN KEY (user_id) REFERENCES users (id))''')
     conn.commit()
     conn.close()
-
+    
+ # Initialize prizes table with some data if empty
+    initialize_prizes_table()
+    
 def get_db_connection():
     db_path = get_db_path()
     conn = sqlite3.connect(db_path)
