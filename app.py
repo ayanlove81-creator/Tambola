@@ -22,31 +22,53 @@ def get_db_path():
 def init_db():
     conn = sqlite3.connect(get_db_path())
     c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS users
-                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                  name TEXT NOT NULL,
-                  device_id TEXT UNIQUE NOT NULL,
-                  ticket_code TEXT UNIQUE NOT NULL,
-                  ticket_data TEXT,
-                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     
-    c.execute('''CREATE TABLE IF NOT EXISTS used_tickets
-                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                  ticket_hash TEXT UNIQUE,
-                  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+    # Create tables with error handling
+    tables = [
+        '''CREATE TABLE IF NOT EXISTS users
+           (id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            device_id TEXT UNIQUE NOT NULL,
+            ticket_code TEXT UNIQUE NOT NULL,
+            ticket_data TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''',
+            
+        '''CREATE TABLE IF NOT EXISTS used_tickets
+           (id INTEGER PRIMARY KEY AUTOINCREMENT,
+            ticket_hash TEXT UNIQUE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''',
+            
+        '''CREATE TABLE IF NOT EXISTS prizes
+           (id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            ticket_code TEXT,
+            user_name TEXT,
+            prize_type TEXT NOT NULL,
+            status TEXT DEFAULT 'pending',
+            claimed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            approved_at TIMESTAMP NULL,
+            approved_by TEXT NULL,
+            FOREIGN KEY (user_id) REFERENCES users (id))''',
+            
+        '''CREATE TABLE IF NOT EXISTS called_numbers
+           (id INTEGER PRIMARY KEY AUTOINCREMENT,
+            number INTEGER NOT NULL,
+            called_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            called_by TEXT DEFAULT 'system')''',
+            
+        '''CREATE TABLE IF NOT EXISTS game_state
+           (id INTEGER PRIMARY KEY AUTOINCREMENT,
+            key TEXT UNIQUE NOT NULL,
+            value TEXT NOT NULL,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)'''
+    ]
     
-    # Updated prizes table with approval system
-    c.execute('''CREATE TABLE IF NOT EXISTS prizes
-                 (id INTEGER PRIMARY KEY AUTOINCREMENT,
-                  user_id INTEGER,
-                  ticket_code TEXT,
-                  user_name TEXT,
-                  prize_type TEXT NOT NULL,
-                  status TEXT DEFAULT 'pending', -- pending, approved, rejected
-                  claimed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                  approved_at TIMESTAMP NULL,
-                  approved_by TEXT NULL,
-                  FOREIGN KEY (user_id) REFERENCES users (id))''')
+    for table_sql in tables:
+        try:
+            c.execute(table_sql)
+        except Exception as e:
+            print(f"Error creating table: {e}")
+    
     conn.commit()
     conn.close()
     
@@ -657,18 +679,42 @@ def admin():
         # Get all users with their tickets
         users = db.execute('SELECT * FROM users ORDER BY created_at DESC').fetchall()
         
-        # Get statistics
-        total_tickets = db.execute('SELECT COUNT(*) as count FROM used_tickets').fetchone()['count']
-        total_users = db.execute('SELECT COUNT(*) as count FROM users').fetchone()['count']
+        # Get statistics with error handling
+        try:
+            total_tickets = db.execute('SELECT COUNT(*) as count FROM used_tickets').fetchone()['count']
+        except:
+            total_tickets = 0
+            
+        try:
+            total_users = db.execute('SELECT COUNT(*) as count FROM users').fetchone()['count']
+        except:
+            total_users = 0
         
-        # Get recent registrations (last 24 hours)
-        recent_users = db.execute(
-            'SELECT COUNT(*) as count FROM users WHERE created_at >= datetime("now", "-1 day")'
-        ).fetchone()['count']
+        # Get prize claims with error handling
+        pending_claims = []
+        approved_claims = []
         
-        # Get prize claims
-        pending_claims = get_pending_claims()
-        approved_claims = get_approved_claims()
+        try:
+            pending_claims = db.execute('''
+                SELECT p.*, u.name 
+                FROM prizes p 
+                JOIN users u ON p.user_id = u.id 
+                WHERE p.status = "pending"
+                ORDER BY p.claimed_at ASC
+            ''').fetchall()
+        except Exception as e:
+            print(f"Error getting pending claims: {e}")
+        
+        try:
+            approved_claims = db.execute('''
+                SELECT p.*, u.name 
+                FROM prizes p 
+                JOIN users u ON p.user_id = u.id 
+                WHERE p.status = "approved"
+                ORDER BY p.approved_at DESC
+            ''').fetchall()
+        except Exception as e:
+            print(f"Error getting approved claims: {e}")
         
         db.close()
         
@@ -690,14 +736,21 @@ def admin():
                 print(f"Error processing user {user['id']}: {e}")
                 continue
         
+        # Show admin message if any
+        admin_message = session.pop('admin_message', None)
+        admin_success = session.pop('admin_success', None)
+        
         return render_template('admin.html', 
                              users=user_list, 
                              total_tickets=total_tickets,
                              total_users=total_users,
-                             recent_users=recent_users,
                              pending_claims=pending_claims,
-                             approved_claims=approved_claims)
+                             approved_claims=approved_claims,
+                             admin_message=admin_message,
+                             admin_success=admin_success)
+                             
     except Exception as e:
+        print(f"Admin page error: {e}")
         return f"Error loading admin page: {str(e)}", 500
 
 def check_prize_claim(ticket_code, prize_type):
@@ -738,22 +791,28 @@ def claim_prize_route():
     
     return redirect(f'/ticket?code={ticket_code}')
 
-        
-
 @app.route('/admin/approve_claim/<int:claim_id>')
 def approve_claim(claim_id):
     """Admin route to approve a prize claim"""
-    success, message = approve_prize_claim(claim_id)
-    session['admin_message'] = message
-    session['admin_success'] = success
+    try:
+        success, message = approve_prize_claim(claim_id)
+        session['admin_message'] = message
+        session['admin_success'] = success
+    except Exception as e:
+        session['admin_message'] = f"Error approving claim: {str(e)}"
+        session['admin_success'] = False
     return redirect('/admin')
 
 @app.route('/admin/reject_claim/<int:claim_id>')
 def reject_claim(claim_id):
     """Admin route to reject a prize claim"""
-    success, message = reject_prize_claim(claim_id)
-    session['admin_message'] = message
-    session['admin_success'] = success
+    try:
+        success, message = reject_prize_claim(claim_id)
+        session['admin_message'] = message
+        session['admin_success'] = success
+    except Exception as e:
+        session['admin_message'] = f"Error rejecting claim: {str(e)}"
+        session['admin_success'] = False
     return redirect('/admin')
 
 @app.route('/admin/clear_claims')
@@ -818,8 +877,50 @@ def reset_database():
 def fix_database():
     """Fix database schema issues"""
     try:
-        init_db()  # This will recreate any missing tables
-        return "Database fixed successfully! Tables: users, used_tickets, prizes"
+        conn = sqlite3.connect(get_db_path())
+        c = conn.cursor()
+        
+        # Check if prizes table exists and has correct structure
+        try:
+            c.execute("SELECT * FROM prizes LIMIT 1")
+        except sqlite3.OperationalError:
+            # Recreate prizes table
+            c.execute('DROP TABLE IF EXISTS prizes')
+            c.execute('''CREATE TABLE prizes
+                         (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                          user_id INTEGER,
+                          ticket_code TEXT,
+                          user_name TEXT,
+                          prize_type TEXT NOT NULL,
+                          status TEXT DEFAULT 'pending',
+                          claimed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                          approved_at TIMESTAMP NULL,
+                          approved_by TEXT NULL,
+                          FOREIGN KEY (user_id) REFERENCES users (id))''')
+        
+        # Check if called_numbers table exists
+        try:
+            c.execute("SELECT * FROM called_numbers LIMIT 1")
+        except sqlite3.OperationalError:
+            c.execute('''CREATE TABLE IF NOT EXISTS called_numbers
+                         (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                          number INTEGER NOT NULL,
+                          called_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                          called_by TEXT DEFAULT 'system')''')
+        
+        # Check if game_state table exists
+        try:
+            c.execute("SELECT * FROM game_state LIMIT 1")
+        except sqlite3.OperationalError:
+            c.execute('''CREATE TABLE IF NOT EXISTS game_state
+                         (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                          key TEXT UNIQUE NOT NULL,
+                          value TEXT NOT NULL,
+                          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
+        
+        conn.commit()
+        conn.close()
+        return "Database fixed successfully!"
     except Exception as e:
         return f"Error fixing database: {str(e)}"
         
