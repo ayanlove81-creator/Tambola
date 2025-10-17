@@ -24,19 +24,20 @@ def init_db():
                   ticket_hash TEXT UNIQUE,
                   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
     
-    # Add prizes table - FIXED: Check if table exists first
+    # Updated prizes table with approval system
     c.execute('''CREATE TABLE IF NOT EXISTS prizes
                  (id INTEGER PRIMARY KEY AUTOINCREMENT,
                   user_id INTEGER,
                   ticket_code TEXT,
+                  user_name TEXT,
                   prize_type TEXT NOT NULL,
+                  status TEXT DEFAULT 'pending', -- pending, approved, rejected
                   claimed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                  approved_at TIMESTAMP NULL,
+                  approved_by TEXT NULL,
                   FOREIGN KEY (user_id) REFERENCES users (id))''')
     conn.commit()
     conn.close()
-    
-    # Initialize prizes table with some data if empty
-    initialize_prizes_table()
 
 def get_db_connection():
     db_path = get_db_path()
