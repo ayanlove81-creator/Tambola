@@ -477,6 +477,99 @@
         .ticket-container {
             animation: ticketAppear 0.6s ease-out;
         }
+        .prize-section {
+    margin: 20px 0;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 2px solid #e9ecef;
+}
+
+.prize-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 15px 0;
+}
+
+.btn-prize {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #3498db;
+    color: white;
+}
+
+.btn-prize:hover:not(:disabled) {
+    background: #2980b9;
+    transform: translateY(-2px);
+}
+
+.btn-prize:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+.btn-prize.pending {
+    background: #f39c12;
+}
+
+.btn-prize.approved {
+    background: #27ae60;
+}
+
+.claim-status {
+    margin: 10px 0;
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.status-pending {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    color: #856404;
+}
+
+.status-approved {
+    background: #d1ecf1;
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+}
+
+.status-rejected {
+    background: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}
+
+.winners-board {
+    margin-top: 20px;
+    padding: 15px;
+    background: #2c3e50;
+    color: white;
+    border-radius: 10px;
+}
+
+.winner-item {
+    padding: 8px;
+    margin: 5px 0;
+    background: rgba(255,255,255,0.1);
+    border-radius: 5px;
+}
+
+.prize-badge {
+    display: inline-block;
+    padding: 5px 10px;
+    margin: 2px;
+    background: #3498db;
+    color: white;
+    border-radius: 15px;
+    font-size: 0.8em;
+}
     </style>
 </head>
 <body>
@@ -551,7 +644,7 @@
         </div>
         <!-- Prize Claiming Section -->
 <div class="prize-section">
-    <h3>🎯 Prize Claims</h3>
+    <h3>🎯 Prize Claims (Admin Approval Required)</h3>
     
     {% if session.get('claim_message') %}
     <div class="alert alert-{{ 'success' if session.get('claim_success') else 'error' }}">
@@ -560,61 +653,63 @@
     {% endif %}
     
     <div class="prize-buttons">
-        <form method="POST" action="/claim_prize" style="display: inline;">
-            <input type="hidden" name="ticket_code" value="{{ ticket_code }}">
-            <input type="hidden" name="prize_type" value="early_five">
-            <button type="submit" class="btn btn-prize" 
-                   {{ 'disabled' if not patterns.early_five else '' }}>
-                🏆 Claim Early Five
-            </button>
-        </form>
-        
-        <form method="POST" action="/claim_prize" style="display: inline;">
-            <input type="hidden" name="ticket_code" value="{{ ticket_code }}">
-            <input type="hidden" name="prize_type" value="first_line">
-            <button type="submit" class="btn btn-prize" 
-                   {{ 'disabled' if not patterns.first_line else '' }}>
-                🥇 Claim First Line
-            </button>
-        </form>
-        
-        <form method="POST" action="/claim_prize" style="display: inline;">
-            <input type="hidden" name="ticket_code" value="{{ ticket_code }}">
-            <input type="hidden" name="prize_type" value="middle_line">
-            <button type="submit" class="btn btn-prize" 
-                   {{ 'disabled' if not patterns.middle_line else '' }}>
-                🥈 Claim Middle Line
-            </button>
-        </form>
-        
-        <form method="POST" action="/claim_prize" style="display: inline;">
-            <input type="hidden" name="ticket_code" value="{{ ticket_code }}">
-            <input type="hidden" name="prize_type" value="bottom_line">
-            <button type="submit" class="btn btn-prize" 
-                   {{ 'disabled' if not patterns.bottom_line else '' }}>
-                🥉 Claim Bottom Line
-            </button>
-        </form>
-        
-        <form method="POST" action="/claim_prize" style="display: inline;">
-            <input type="hidden" name="ticket_code" value="{{ ticket_code }}">
-            <input type="hidden" name="prize_type" value="full_house">
-            <button type="submit" class="btn btn-prize" 
-                   {{ 'disabled' if not patterns.full_house else '' }}>
-                🏠 Claim Full House
-            </button>
-        </form>
+        {% for prize in ['early_five', 'first_line', 'middle_line', 'bottom_line', 'full_house'] %}
+            {% set prize_name = prize.replace('_', ' ').title() %}
+            {% set user_claim = user_prizes|selectattr('prize_type', 'equalto', prize)|first %}
+            
+            <form method="POST" action="/claim_prize" style="display: inline;">
+                <input type="hidden" name="ticket_code" value="{{ ticket_code }}">
+                <input type="hidden" name="prize_type" value="{{ prize }}">
+                <button type="submit" class="btn-prize 
+                    {% if user_claim %}
+                        {% if user_claim.status == 'pending' %}pending
+                        {% elif user_claim.status == 'approved' %}approved
+                        {% endif %}
+                    {% endif %}"
+                    {% if not patterns[prize] or user_claim %}disabled{% endif %}>
+                    
+                    {% if user_claim %}
+                        {% if user_claim.status == 'pending' %}⏳ {{ prize_name }}
+                        {% elif user_claim.status == 'approved' %}✅ {{ prize_name }}
+                        {% else %}❌ {{ prize_name }}{% endif %}
+                    {% else %}
+                        🏆 Claim {{ prize_name }}
+                    {% endif %}
+                </button>
+            </form>
+        {% endfor %}
     </div>
     
+    <!-- Show user's claim status -->
     {% if user_prizes %}
-    <div class="my-prizes">
-        <h4>Your Claims:</h4>
+    <div class="my-claims">
+        <h4>Your Claim Status:</h4>
         {% for prize in user_prizes %}
-        <span class="prize-badge">{{ prize.prize_type.replace('_', ' ').title() }}</span>
+            <div class="claim-status status-{{ prize.status }}">
+                <strong>{{ prize.prize_type.replace('_', ' ').title() }}:</strong>
+                {{ prize.status|title }} 
+                <small>(claimed: {{ prize.claimed_at }})</small>
+            </div>
         {% endfor %}
     </div>
     {% endif %}
+    
+    <!-- Winners Board -->
+    <div class="winners-board">
+        <h4>🏆 Approved Winners:</h4>
+        {% if approved_winners %}
+            {% for winner in approved_winners %}
+            <div class="winner-item">
+                <strong>{{ winner.prize_type.replace('_', ' ').title() }}:</strong>
+                {{ winner.user_name }} ({{ winner.ticket_code }})
+            </div>
+            {% endfor %}
+        {% else %}
+            <div>No winners approved yet</div>
+        {% endif %}
+    </div>
 </div>
+    
         <div class="instructions">
             <h3>🎪 Magical Tambola Rules:</h3>
             <ul>
