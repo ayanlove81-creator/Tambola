@@ -632,44 +632,33 @@ def check_prize_claim(ticket_code, prize_type):
     db.close()
     return existing is not None
 
-def claim_prize(user_id, ticket_code, prize_type, user_name):
-    """Submit a prize claim for admin approval"""
-    # Check if this prize type is already approved
+@app.route('/claim_prize', methods=['POST'])
+def claim_prize_route():
+    if 'device_id' not in session:
+        return redirect('/')
+    
+    ticket_code = request.form.get('ticket_code')
+    prize_type = request.form.get('prize_type')
+    
+    if not ticket_code or not prize_type:
+        return redirect('/ticket')
+    
     db = get_db()
-    existing_approved = db.execute(
-        'SELECT * FROM prizes WHERE prize_type = ? AND status = "approved"', 
-        [prize_type]
-    ).fetchone()
+    user = db.execute('SELECT * FROM users WHERE ticket_code = ? AND device_id = ?', 
+                     [ticket_code, session['device_id']]).fetchone()
     
-    if existing_approved:
+    if not user:
         db.close()
-        return False, "This prize has already been claimed and approved!"
+        return redirect('/ticket')
     
-    # Check if user already has a pending or approved claim for this prize
-    user_existing = db.execute(
-        'SELECT * FROM prizes WHERE user_id = ? AND prize_type = ? AND status IN ("pending", "approved")', 
-        [user_id, prize_type]
-    ).fetchone()
+    success, message = claim_prize(user['id'], ticket_code, prize_type, user['name'])
+    db.close()
     
-    if user_existing:
-        db.close()
-        if user_existing['status'] == 'pending':
-            return False, "You already have a pending claim for this prize!"
-        else:
-            return False, "You have already claimed this prize!"
+    # Store message in session to display on redirect
+    session['claim_message'] = message
+    session['claim_success'] = success
     
-    # Submit the claim for approval
-    try:
-        db.execute(
-            'INSERT INTO prizes (user_id, ticket_code, user_name, prize_type, status) VALUES (?, ?, ?, ?, "pending")',
-            [user_id, ticket_code, user_name, prize_type]
-        )
-        db.commit()
-        db.close()
-        return True, "Prize claim submitted for admin approval!"
-    except Exception as e:
-        db.close()
-        return False, f"Error submitting claim: {str(e)}"
+    return redirect(f'/ticket?code={ticket_code}')
 
 def approve_prize_claim(claim_id, approved_by="admin"):
     """Approve a prize claim"""
@@ -728,6 +717,31 @@ def check_ticket_patterns(ticket, called_numbers):
         'full_house': all(num == 0 or num in called_numbers for row in ticket for num in row)
     }
     return patterns
+@app.route('/admin/approve_claim/<int:claim_id>')
+def approve_claim(claim_id):
+    """Admin route to approve a prize claim"""
+    success, message = approve_prize_claim(claim_id)
+    session['admin_message'] = message
+    session['admin_success'] = success
+    return redirect('/admin')
+
+@app.route('/admin/reject_claim/<int:claim_id>')
+def reject_claim(claim_id):
+    """Admin route to reject a prize claim"""
+    success, message = reject_prize_claim(claim_id)
+    session['admin_message'] = message
+    session['admin_success'] = success
+    return redirect('/admin')
+
+@app.route('/admin/clear_claims')
+def clear_claims():
+    """Clear all prize claims (for testing)"""
+    db = get_db()
+    db.execute('DELETE FROM prizes')
+    db.commit()
+    db.close()
+    session['admin_message'] = "All claims cleared!"
+    return redirect('/admin')
     
 @app.route('/stats')
 def stats():
