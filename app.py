@@ -12,9 +12,15 @@ from datetime import datetime
 from flask import Flask, render_template, request, session, redirect, url_for
 from flask import send_from_directory
 from flask import jsonify
+import time
+import threading
+from flask import Response
+
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-key-123')
+auto_call_enabled = False
+auto_call_interval = 10  # seconds
 
 # Database setup for Render
 def get_db_path():
@@ -1103,6 +1109,97 @@ def get_number_text(number):
             return f"{tens_words[tens]} {number_words[units]}"
     
     return str(number)
+
+def auto_call_worker():
+    """Background worker for automatic number calling"""
+    while auto_call_enabled:
+        try:
+            if auto_call_enabled:
+                number, message = call_number()
+                if number:
+                    print(f"Auto-called number: {number}")
+                else:
+                    print(f"Auto-call failed: {message}")
+                    if "All numbers have been called" in message:
+                        stop_auto_call()
+            time.sleep(auto_call_interval)
+        except Exception as e:
+            print(f"Auto-call error: {e}")
+        time.sleep(auto_call_interval)
+
+auto_call_thread = None
+
+def start_auto_call():
+    """Start automatic number calling"""
+    global auto_call_enabled, auto_call_thread
+    if not auto_call_enabled:
+        auto_call_enabled = True
+        auto_call_thread = threading.Thread(target=auto_call_worker, daemon=True)
+        auto_call_thread.start()
+        return True, "Auto-call started!"
+    return False, "Auto-call is already running!"
+
+def stop_auto_call():
+    """Stop automatic number calling"""
+    global auto_call_enabled
+    auto_call_enabled = False
+    return True, "Auto-call stopped!"
+
+def get_auto_call_status():
+    """Get auto-call status"""
+    return auto_call_enabled
+
+# Add these new routes to app.py
+
+@app.route('/auto_call/start')
+def start_auto_call_route():
+    """Start automatic number calling"""
+    success, message = start_auto_call()
+    return jsonify({'success': success, 'message': message})
+
+@app.route('/auto_call/stop')
+def stop_auto_call_route():
+    """Stop automatic number calling"""
+    success, message = stop_auto_call()
+    return jsonify({'success': success, 'message': message})
+
+@app.route('/auto_call/status')
+def auto_call_status_route():
+    """Get auto-call status"""
+    return jsonify({'enabled': auto_call_enabled})
+
+@app.route('/auto_call/set_interval', methods=['POST'])
+def set_auto_call_interval():
+    """Set auto-call interval"""
+    global auto_call_interval
+    interval = request.json.get('interval', 10)
+    if 5 <= interval <= 60:  # Limit between 5 and 60 seconds
+        auto_call_interval = interval
+        return jsonify({'success': True, 'interval': auto_call_interval})
+    return jsonify({'success': False, 'message': 'Interval must be between 5 and 60 seconds'})
+
+@app.route('/sound/announce/<int:number>')
+def announce_number(number):
+    """Announce a number with sound (text-to-speech)"""
+    number_text = get_number_text(number)
+    return jsonify({
+        'number': number,
+        'text': number_text,
+        'audio_url': f'/sound/speak/{number}'
+    })
+
+@app.route('/sound/speak/<int:number>')
+def speak_number_route(number):
+    """Text-to-speech endpoint for numbers"""
+    number_text = get_number_text(number)
+    
+    # This is a placeholder - in production, you'd use a TTS service
+    # For now, we'll return a JSON response
+    return jsonify({
+        'number': number,
+        'text': number_text,
+        'message': f"Number {number} - {number_text}"
+    })
     
 @app.route('/health')
 def health():
