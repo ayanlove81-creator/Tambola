@@ -908,7 +908,155 @@ def fix_database():
         return "Database fixed successfully!"
     except Exception as e:
         return f"Error fixing database: {str(e)}"
+@app.route('/caller')
+def caller_dashboard():
+    """Number caller dashboard"""
+    called_numbers = get_called_numbers()
+    recent_numbers = called_numbers[-10:]  # Last 10 numbers
+    return render_template('caller.html', 
+                         called_numbers=called_numbers,
+                         recent_numbers=recent_numbers,
+                         total_called=len(called_numbers),
+                         remaining=90 - len(called_numbers))
+
+@app.route('/call_number', methods=['POST'])
+def call_number_route():
+    """Call a number (manual or auto)"""
+    number = request.form.get('number', type=int)
+    auto = request.form.get('auto') == 'true'
+    
+    if auto:
+        number, message = call_number()  # Auto-call
+    else:
+        number, message = call_number(number)  # Manual call
+    
+    if number:
+        # Get audio/text for the number
+        number_text = get_number_text(number)
+        return jsonify({
+            'success': True,
+            'number': number,
+            'number_text': number_text,
+            'message': message,
+            'total_called': len(get_called_numbers())
+        })
+    else:
+        return jsonify({
+            'success': False,
+            'message': message
+        })
+
+@app.route('/called_numbers')
+def get_called_numbers_route():
+    """API to get called numbers"""
+    numbers = get_called_numbers()
+    return jsonify({'called_numbers': numbers})
+
+@app.route('/reset_numbers', methods=['POST'])
+def reset_numbers_route():
+    """Reset all called numbers"""
+    if reset_called_numbers():
+        return jsonify({'success': True, 'message': 'All numbers reset!'})
+    else:
+        return jsonify({'success': False, 'message': 'Error resetting numbers'})
+
+@app.route('/last_number')
+def get_last_number():
+    """Get the last called number"""
+    db = get_db()
+    last = db.execute(
+        'SELECT number FROM called_numbers ORDER BY called_at DESC LIMIT 1'
+    ).fetchone()
+    db.close()
+    
+    if last:
+        number_text = get_number_text(last['number'])
+        return jsonify({
+            'number': last['number'],
+            'number_text': number_text
+        })
+    else:
+        return jsonify({'number': None})
+ALL_TAMBOLA_NUMBERS = list(range(1, 91))
+
+def get_called_numbers():
+    """Get all called numbers in order"""
+    db = get_db()
+    numbers = db.execute(
+        'SELECT number FROM called_numbers ORDER BY called_at ASC'
+    ).fetchall()
+    db.close()
+    return [row['number'] for row in numbers]
+
+def call_number(number=None):
+    """Call a number (manual or auto)"""
+    db = get_db()
+    
+    if number is None:
+        # Auto-call: get next random number
+        called_numbers = get_called_numbers()
+        available_numbers = [n for n in ALL_TAMBOLA_NUMBERS if n not in called_numbers]
         
+        if not available_numbers:
+            db.close()
+            return None, "All numbers have been called!"
+        
+        number = random.choice(available_numbers)
+    
+    # Check if number already called
+    existing = db.execute(
+        'SELECT * FROM called_numbers WHERE number = ?', [number]
+    ).fetchone()
+    
+    if existing:
+        db.close()
+        return None, f"Number {number} has already been called!"
+    
+    # Add the number
+    try:
+        db.execute(
+            'INSERT INTO called_numbers (number) VALUES (?)',
+            [number]
+        )
+        db.commit()
+        db.close()
+        return number, f"Number {number} called successfully!"
+    except Exception as e:
+        db.close()
+        return None, f"Error calling number: {str(e)}"
+
+def reset_called_numbers():
+    """Reset all called numbers"""
+    db = get_db()
+    db.execute('DELETE FROM called_numbers')
+    db.commit()
+    db.close()
+    return True
+
+def get_number_text(number):
+    """Convert number to spoken text"""
+    if number <= 90:
+        tens = number // 10
+        units = number % 10
+        
+        if number in [11, 12]:
+            return f"eleven" if number == 11 else "twelve"
+        elif tens == 0:
+            return ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"][units]
+        elif tens == 1:
+            return ["ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen"][units]
+        elif tens in [2, 3, 4, 5, 8]:
+            tens_words = ["twenty", "thirty", "forty", "fifty", "eighty"]
+            word = tens_words[tens-2]
+            if units > 0:
+                word += " " + ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"][units-1]
+            return word
+        elif tens == 9:
+            return "ninety" if units == 0 else f"ninety {['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine'][units-1]}"
+        else:
+            return str(number)
+    return str(number)
+    
 @app.route('/health')
 def health():
     return 'OK'
