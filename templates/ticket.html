@@ -599,7 +599,14 @@
                 <span style="font-family: monospace; font-size: 18px; font-weight: bold; letter-spacing: 2px; color: gold;">
                     {{ ticket_code }}
                 </span>
-            </div>
+            </div><div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
+    <a href="/fullscreen-caller" target="_blank" class="btn" style="background: #e74c3c; padding: 10px 20px;">
+        📢 Live Number Caller
+    </a>
+    <a href="/dashboard" target="_blank" class="btn" style="background: #3498db; padding: 10px 20px;">
+        📊 Number Dashboard
+    </a>
+</div>
             <p style="margin: 5px 0 0 0; font-size: 12px; opacity: 0.8;">
                 ✨ Save this code for magical recovery ✨
             </p>
@@ -644,36 +651,46 @@
         </div>
         <!-- Prize Claiming Section -->
 <div class="prize-section">
-    <h3>🎯 Prize Claims (Admin Approval Required)</h3>
+    <h3>🎯 Prize Claims</h3>
     
     {% if session.get('claim_message') %}
-    <div class="alert alert-{{ 'success' if session.get('claim_success') else 'error' }}">
+    <div class="claim-status status-{{ 'approved' if session.get('claim_success') else 'rejected' }}" 
+         style="margin-bottom: 15px;">
         {{ session.get('claim_message') }}
     </div>
     {% endif %}
     
     <div class="prize-buttons">
-        {% for prize in ['early_five', 'first_line', 'middle_line', 'bottom_line', 'full_house'] %}
-            {% set prize_name = prize.replace('_', ' ').title() %}
-            {% set user_claim = user_prizes|selectattr('prize_type', 'equalto', prize)|first %}
+        {% for prize_type, prize_name in [
+            ('early_five', 'Early Five'),
+            ('first_line', 'First Line'), 
+            ('middle_line', 'Middle Line'),
+            ('bottom_line', 'Bottom Line'),
+            ('full_house', 'Full House')
+        ] %}
+            {% set user_claim = user_prizes|selectattr('prize_type', 'equalto', prize_type)|first if user_prizes %}
             
             <form method="POST" action="/claim_prize" style="display: inline;">
                 <input type="hidden" name="ticket_code" value="{{ ticket_code }}">
-                <input type="hidden" name="prize_type" value="{{ prize }}">
+                <input type="hidden" name="prize_type" value="{{ prize_type }}">
                 <button type="submit" class="btn-prize 
                     {% if user_claim %}
                         {% if user_claim.status == 'pending' %}pending
                         {% elif user_claim.status == 'approved' %}approved
                         {% endif %}
                     {% endif %}"
-                    {% if not patterns[prize] or user_claim %}disabled{% endif %}>
+                    {% if not patterns[prize_type] or user_claim %}disabled{% endif %}>
                     
                     {% if user_claim %}
                         {% if user_claim.status == 'pending' %}⏳ {{ prize_name }}
                         {% elif user_claim.status == 'approved' %}✅ {{ prize_name }}
                         {% else %}❌ {{ prize_name }}{% endif %}
                     {% else %}
-                        🏆 Claim {{ prize_name }}
+                        {% if patterns[prize_type] %}
+                            🏆 Claim {{ prize_name }}
+                        {% else %}
+                            ⏳ {{ prize_name }}
+                        {% endif %}
                     {% endif %}
                 </button>
             </form>
@@ -682,10 +699,10 @@
     
     <!-- Show user's claim status -->
     {% if user_prizes %}
-    <div class="my-claims">
+    <div style="margin-top: 20px;">
         <h4>Your Claim Status:</h4>
         {% for prize in user_prizes %}
-            <div class="claim-status status-{{ prize.status }}">
+            <div class="claim-status status-{{ prize.status }}" style="margin: 5px 0;">
                 <strong>{{ prize.prize_type.replace('_', ' ').title() }}:</strong>
                 {{ prize.status|title }} 
                 <small>(claimed: {{ prize.claimed_at }})</small>
@@ -693,22 +710,26 @@
         {% endfor %}
     </div>
     {% endif %}
-    
-    <!-- Winners Board -->
-    <div class="winners-board">
-        <h4>🏆 Approved Winners:</h4>
-        {% if approved_winners %}
-            {% for winner in approved_winners %}
-            <div class="winner-item">
-                <strong>{{ winner.prize_type.replace('_', ' ').title() }}:</strong>
-                {{ winner.user_name }} ({{ winner.ticket_code }})
-            </div>
-            {% endfor %}
-        {% else %}
-            <div>No winners approved yet</div>
-        {% endif %}
-    </div>
 </div>
+
+<!-- Winners Board -->
+<div class="winners-board">
+    <h4>🏆 Approved Winners:</h4>
+    {% if approved_winners %}
+        {% for winner in approved_winners %}
+        <div class="winner-item">
+            <span class="prize-badge">{{ winner.prize_type.replace('_', ' ').title() }}</span>
+            {{ winner.user_name }} ({{ winner.ticket_code }})
+        </div>
+        {% endfor %}
+    {% else %}
+        <div style="text-align: center; padding: 10px; color: #bdc3c7;">
+            No winners approved yet
+        </div>
+    {% endif %}
+</div>
+    
+   
     
         <div class="instructions">
             <h3>🎪 Magical Tambola Rules:</h3>
