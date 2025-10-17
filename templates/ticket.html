@@ -642,82 +642,8 @@
             <a href="/recover" class="btn">🔍 Recover Ticket</a>
             <a href="/" class="btn">🏠 Home</a>
         </div>
-        <!-- Prize Claiming Section -->
-<div class="prize-section">
-    <h3>🎯 Prize Claims</h3>
-    
-    {% if session.get('claim_message') %}
-    <div class="claim-status status-{{ 'approved' if session.get('claim_success') else 'rejected' }}" 
-         style="margin-bottom: 15px;">
-        {{ session.get('claim_message') }}
-    </div>
-    {% endif %}
-    
-    <div class="prize-buttons">
-        {% for prize_type, prize_name in [
-            ('early_five', 'Early Five'),
-            ('first_line', 'First Line'), 
-            ('middle_line', 'Middle Line'),
-            ('bottom_line', 'Bottom Line'),
-            ('full_house', 'Full House')
-        ] %}
-            {% set user_claim = user_prizes|selectattr('prize_type', 'equalto', prize_type)|first if user_prizes %}
-            {% set pattern_completed = patterns[prize_type] %}
-            
-            <form method="POST" action="/claim_prize" style="display: inline;">
-                <input type="hidden" name="ticket_code" value="{{ ticket_code }}">
-                <input type="hidden" name="prize_type" value="{{ prize_type }}">
-                <button type="submit" class="btn-prize 
-                    {% if user_claim %}
-                        {% if user_claim.status == 'pending' %}pending
-                        {% elif user_claim.status == 'approved' %}approved
-                        {% endif %}
-                    {% elif pattern_completed %}available{% else %}disabled{% endif %}"
-                    {% if user_claim or not pattern_completed %}disabled{% endif %}>
-                    
-                    {% if user_claim %}
-                        {% if user_claim.status == 'pending' %}⏳ {{ prize_name }}
-                        {% elif user_claim.status == 'approved' %}✅ {{ prize_name }}
-                        {% else %}❌ {{ prize_name }}{% endif %}
-                    {% else %}
-                        {% if pattern_completed %}
-                            🏆 Claim {{ prize_name }}
-                        {% else %}
-                            ⏳ {{ prize_name }}
-                        {% endif %}
-                    {% endif %}
-                </button>
-            </form>
-        {% endfor %}
-    </div>
-    
-    <!-- Debug Info - Remove this after testing -->
-    <div style="background: #f8f9fa; padding: 10px; border-radius: 5px; margin: 10px 0; font-size: 12px; color: #666; border-left: 4px solid #e74c3c;">
-        <strong>Debug Info:</strong>
-        <div>Called Numbers: {{ called_numbers|length }} numbers</div>
-        <div>Your Marked Numbers: <span id="debug-marked-count">0</span>/15</div>
-        <div>Patterns: 
-            {% for pattern, completed in patterns.items() %}
-            <span style="color: {{ 'green' if completed else 'red' }}">{{ pattern }}: {{ completed }}</span>{% if not loop.last %}, {% endif %}
-            {% endfor %}
-        </div>
-    </div>
-    
-    <!-- Show user's claim status -->
-    {% if user_prizes %}
-    <div style="margin-top: 20px;">
-        <h4>Your Claim Status:</h4>
-        {% for prize in user_prizes %}
-            <div class="claim-status status-{{ prize.status }}" style="margin: 5px 0;">
-                <strong>{{ prize.prize_type.replace('_', ' ').title() }}:</strong>
-                {{ prize.status|title }} 
-                <small>(claimed: {{ prize.claimed_at }})</small>
-            </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-</div>
-    
+      
+        
     <!-- Winners Board -->
     <div class="winners-board">
         <h4>🏆 Approved Winners:</h4>
