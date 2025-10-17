@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambola Number Caller</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .caller-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .caller-header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .caller-header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            padding: 30px;
+            background: #f8f9fa;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .main-display {
+            text-align: center;
+            padding: 50px 30px;
+            background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+            color: white;
+        }
+        
+        .current-number {
+            font-size: 8em;
+            font-weight: bold;
+            text-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 20px;
+        }
+        
+        .number-text {
+            font-size: 2em;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+        
+        .controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 30px;
+        }
+        
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-call {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .btn-call:hover {
+            background: #219a52;
+            transform: translateY(-3px);
+        }
+        
+        .btn-reset {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-reset:hover {
+            background: #c0392b;
+        }
+        
+        .btn-manual {
+            background: #3498db;
+            color: white;
+        }
+        
+        .manual-input {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: #ecf0f1;
+        }
+        
+        .manual-input input {
+            padding: 12px;
+            font-size: 1.2em;
+            width: 100px;
+            text-align: center;
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+        }
+        
+        .called-numbers {
+            padding: 30px;
+        }
+        
+        .numbers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(60px, 1px));
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .number-cell {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #3498db;
+            color: white;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .number-cell.called {
+            background: #e74c3c;
+        }
+        
+        .number-cell.recent {
+            background: #f39c12;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .audio-controls {
+            padding: 20px;
+            text-align: center;
+            background: #2c3e50;
+            color: white;
+        }
+        
+        .auto-call-controls {
+            padding: 20px;
+            text-align: center;
+            background: #34495e;
+            color: white;
+        }
+
+        .actions {
+            padding: 20px;
+            text-align: center;
+            background: #ecf0f1;
+        }
+    </style>
+</head>
+<body>
+    <div class="caller-container">
+        <div class="caller-header">
+            <h1>🎯 Tambola Number Caller</h1>
+            <p>Auto & Manual Number Calling System</p>
+        </div>
+        
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-number" id="total-called">0</div>
+                <div>Numbers Called</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="remaining">90</div>
+                <div>Remaining</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="last-number">-</div>
+                <div>Last Number</div>
+            </div>
+        </div>
+        
+        <div class="main-display">
+            <div class="current-number" id="current-number">--</div>
+            <div class="number-text" id="number-text">Ready to call numbers</div>
+        </div>
+        
+        <div class="controls">
+            <button class="btn btn-call" onclick="callNumber('auto')">
+                🎲 Call Random Number
+            </button>
+            <button class="btn btn-reset" onclick="resetNumbers()">
+                🔄 Reset All Numbers
+            </button>
+        </div>
+        
+        <div class="manual-input">
+            <input type="number" id="manual-number" min="1" max="90" placeholder="1-90">
+            <button class="btn btn-manual" onclick="callNumber('manual')">
+                📢 Call This Number
+            </button>
+        </div>
+        
+        <div class="auto-call-controls">
+            <label>
+                <input type="checkbox" id="auto-call-toggle" onchange="toggleAutoCall()">
+                Enable Auto Call (10 seconds interval)
+            </label>
+            <div id="auto-call-status" style="margin-top: 10px;"></div>
+        </div>
+        
+        <div class="audio-controls">
+            <label>
+                <input type="checkbox" id="sound-toggle" checked>
+                Enable Sound Effects
+            </label>
+            <button onclick="speakNumber()" style="margin-left: 20px; padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 5px; cursor: pointer;">🔊 Speak Current Number</button>
+        </div>
+        
+        <div class="called-numbers">
+            <h3>Called Numbers (Last 10 highlighted)</h3>
+            <div class="numbers-grid" id="numbers-grid">
+                {% for num in range(1, 91) %}
+                <div class="number-cell" id="num-{{ num }}">{{ num }}</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="actions">
+            <a href="/admin" style="padding: 12px 25px; background: #3498db; color: white; text-decoration: none; border-radius: 8px; margin: 5px; display: inline-block;">⚙️ Admin Panel</a>
+            <a href="/" style="padding: 12px 25px; background: #27ae60; color: white; text-decoration: none; border-radius: 8px; margin: 5px; display: inline-block;">🏠 Home</a>
+            <button onclick="location.reload()" style="padding: 12px 25px; background: #95a5a6; color: white; border: none; border-radius: 8px; margin: 5px; cursor: pointer;">🔄 Refresh</button>
+        </div>
+    </div>
+
+    <script>
+        let currentNumber = null;
+        let autoCallInterval = null;
+        
+        function playBeep() {
+            if (!document.getElementById('sound-toggle').checked) return;
+            
+            try {
+                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                oscillator.frequency.value = 800;
+                oscillator.type = 'sine';
+                
+                gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                gainNode.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + 0.1);
+                gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.3);
+                
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+            } catch (e) {
+                console.log('Audio not supported');
+            }
+        }
+        
+        function speakNumber() {
+            if (!currentNumber) return;
+            
+            const numberText = document.getElementById('number-text').textContent;
+            const utterance = new SpeechSynthesisUtterance(numberText);
+            utterance.rate = 0.8;
+            utterance.pitch = 1;
+            window.speechSynthesis.speak(utterance);
+        }
+        
+        function callNumber(mode) {
+            let formData = new FormData();
+            
+            if (mode === 'manual') {
+                const manualNum = document.getElementById('manual-number').value;
+                if (!manualNum || manualNum < 1 || manualNum > 90) {
+                    alert('Please enter a number between 1 and 90');
+                    return;
+                }
+                formData.append('number', manualNum);
+            } else {
+                formData.append('auto', 'true');
+            }
+            
+            fetch('/call_number', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    currentNumber = data.number;
+                    updateDisplay(data);
+                    playBeep();
+                    updateCalledNumbers();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error calling number');
+            });
+        }
+        
+        function updateDisplay(data) {
+            document.getElementById('current-number').textContent = data.number;
+            document.getElementById('number-text').textContent = data.number_text;
+            document.getElementById('total-called').textContent = data.total_called;
+            document.getElementById('remaining').textContent = 90 - data.total_called;
+            document.getElementById('last-number').textContent = data.number;
+            
+            // Highlight the called number
+            const numberCell = document.getElementById(`num-${data.number}`);
+            numberCell.classList.add('called', 'recent');
+            
+            // Remove recent highlight after 5 seconds
+            setTimeout(() => {
+                numberCell.classList.remove('recent');
+            }, 5000);
+        }
+        
+        function resetNumbers() {
+            if (!confirm('Are you sure you want to reset all called numbers?')) return;
+            
+            fetch('/reset_numbers', { method: 'POST' })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+        
+        function toggleAutoCall() {
+            const toggle = document.getElementById('auto-call-toggle');
+            const status = document.getElementById('auto-call-status');
+            
+            if (toggle.checked) {
+                status.textContent = 'Auto call enabled - Next call in 10 seconds';
+                autoCallInterval = setInterval(() => {
+                    callNumber('auto');
+                }, 10000);
+            } else {
+                status.textContent = 'Auto call disabled';
+                if (autoCallInterval) {
+                    clearInterval(autoCallInterval);
+                    autoCallInterval = null;
+                }
+            }
+        }
+        
+        function updateCalledNumbers() {
+            fetch('/called_numbers')
+            .then(response => response.json())
+            .then(data => {
+                // Reset all cells
+                for (let i = 1; i <= 90; i++) {
+                    const cell = document.getElementById(`num-${i}`);
+                    cell.classList.remove('called');
+                }
+                
+                // Mark called numbers
+                data.called_numbers.forEach(num => {
+                    const cell = document.getElementById(`num-${num}`);
+                    cell.classList.add('called');
+                });
+            });
+        }
+        
+        // Initialize display
+        updateCalledNumbers();
+        
+        // Check for last number on load
+        fetch('/last_number')
+        .then(response => response.json())
+        .then(data => {
+            if (data.number) {
+                currentNumber = data.number;
+                document.getElementById('current-number').textContent = data.number;
+                document.getElementById('number-text').textContent = data.number_text;
+                document.getElementById('last-number').textContent = data.number;
+            }
+        });
+        
+        // Update stats
+        fetch('/called_numbers')
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('total-called').textContent = data.called_numbers.length;
+            document.getElementById('remaining').textContent = 90 - data.called_numbers.length;
+        });
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ') {
+                e.preventDefault();
+                callNumber('auto');
+            } else if (e.key === 'r' || e.key === 'R') {
+                e.preventDefault();
+                resetNumbers();
+            } else if (e.key === 's' || e.key === 'S') {
+                e.preventDefault();
+                speakNumber();
+            }
+        });
+        
+        // Manual number input enter key
+        document.getElementById('manual-number').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                callNumber('manual');
+            }
+        });
+    </script>
+</body>
+</html>
