@@ -933,42 +933,6 @@ def caller_dashboard():
                          total_called=len(called_numbers),
                          remaining=90 - len(called_numbers))
 
-@app.route('/call_number', methods=['POST'])
-def call_number_route():
-    """Call a number (manual or auto)"""
-    try:
-        number = request.form.get('number', type=int)
-        auto = request.form.get('auto') == 'true'
-        
-        if auto:
-            number, message = call_number()  # Auto-call
-        else:
-            number, message = call_number(number)  # Manual call
-        
-        if number:
-            # Use simple number text to avoid errors
-            number_text = str(number)
-            
-            return jsonify({
-                'success': True,
-                'number': number,
-                'number_text': number_text,
-                'message': message,
-                'total_called': len(get_called_numbers())
-            })
-        else:
-            return jsonify({
-                'success': False,
-                'message': message
-            })
-    except Exception as e:
-        print(f"Error in call_number_route: {e}")
-        return jsonify({
-            'success': False,
-            'message': f"Server error: {str(e)}"
-        })
-        
-
 @app.route('/called_numbers')
 def get_called_numbers_route():
     """API to get called numbers"""
@@ -982,7 +946,53 @@ def reset_numbers_route():
         return jsonify({'success': True, 'message': 'All numbers reset!'})
     else:
         return jsonify({'success': False, 'message': 'Error resetting numbers'})
-
+def call_number(manual_number=None):
+    """Call a number - either manual or random"""
+    try:
+        db = get_db()
+        
+        # Get already called numbers
+        called_numbers = get_called_numbers()
+        
+        # If all numbers are called, return message
+        if len(called_numbers) >= 90:
+            db.close()
+            return None, "🎉 All numbers have been called! Game complete!"
+        
+        if manual_number is not None:
+            # Manual call - validate number
+            if manual_number < 1 or manual_number > 90:
+                db.close()
+                return None, "Please enter a number between 1 and 90"
+            
+            if manual_number in called_numbers:
+                db.close()
+                return None, f"Number {manual_number} has already been called!"
+            
+            number = manual_number
+        else:
+            # Auto call - get random uncalled number
+            available_numbers = [n for n in range(1, 91) if n not in called_numbers]
+            if not available_numbers:
+                db.close()
+                return None, "No numbers available to call!"
+            
+            number = random.choice(available_numbers)
+        
+        # Record the called number
+        db.execute(
+            'INSERT INTO called_numbers (number, called_by) VALUES (?, ?)',
+            [number, 'system' if manual_number is None else 'manual']
+        )
+        db.commit()
+        db.close()
+        
+        return number, f"Number {number} called successfully!"
+        
+    except Exception as e:
+        print(f"Error in call_number: {e}")
+        return None, f"Error calling number: {str(e)}"
+        
 @app.route('/last_number')
 def get_last_number():
     """Get the last called number"""
@@ -1077,36 +1087,48 @@ def reset_called_numbers():
     return True
 
 def get_number_text(number):
-    """Convert number to text pronunciation"""
+    """Convert number to proper pronunciation like '2 3 twenty-three'"""
     if not number:
         return ""
     
-    # Simple number to text mapping for common numbers
-    number_words = {
-        1: "One", 2: "Two", 3: "Three", 4: "Four", 5: "Five",
-        6: "Six", 7: "Seven", 8: "Eight", 9: "Nine", 10: "Ten",
-        11: "Eleven", 12: "Twelve", 13: "Thirteen", 14: "Fourteen", 15: "Fifteen",
-        16: "Sixteen", 17: "Seventeen", 18: "Eighteen", 19: "Nineteen", 20: "Twenty",
-        90: "Ninety"
-    }
+    # For numbers 1-90, we want to pronounce each digit separately for numbers 1-9
+    # and as whole numbers for 10-90
     
-    if number in number_words:
-        return number_words[number]
+    if 1 <= number <= 9:
+        # Single digit - pronounce as is
+        number_words = {
+            1: "One", 2: "Two", 3: "Three", 4: "Four", 5: "Five",
+            6: "Six", 7: "Seven", 8: "Eight", 9: "Nine"
+        }
+        return number_words.get(number, str(number))
     
-    # For numbers 21-89, handle tens and units
-    if 21 <= number <= 89:
-        tens = number // 10
-        units = number % 10
-        
-        tens_words = {
-            2: "Twenty", 3: "Thirty", 4: "Forty", 5: "Fifty",
-            6: "Sixty", 7: "Seventy", 8: "Eighty"
+    elif 10 <= number <= 90:
+        # Two-digit numbers - pronounce as whole number
+        number_words = {
+            10: "Ten", 11: "Eleven", 12: "Twelve", 13: "Thirteen", 
+            14: "Fourteen", 15: "Fifteen", 16: "Sixteen", 17: "Seventeen",
+            18: "Eighteen", 19: "Nineteen", 20: "Twenty", 30: "Thirty",
+            40: "Forty", 50: "Fifty", 60: "Sixty", 70: "Seventy",
+            80: "Eighty", 90: "Ninety"
         }
         
-        if units == 0:
-            return tens_words[tens]
+        if number in number_words:
+            return number_words[number]
+        
+        # For numbers like 23, 45, etc.
+        tens = (number // 10) * 10
+        units = number % 10
+        
+        tens_word = number_words.get(tens, "")
+        units_word = {
+            1: "One", 2: "Two", 3: "Three", 4: "Four", 5: "Five",
+            6: "Six", 7: "Seven", 8: "Eight", 9: "Nine"
+        }.get(units, "")
+        
+        if tens_word and units_word:
+            return f"{tens_word} {units_word}"
         else:
-            return f"{tens_words[tens]} {number_words[units]}"
+            return str(number)
     
     return str(number)
 
