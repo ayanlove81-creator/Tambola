@@ -174,7 +174,7 @@
             border-radius: 15px;
             padding: 25px;
             margin: 20px auto;
-            max-width: 800px; /* Increased from 550px */
+            max-width: 800px;
             box-shadow: 
                 0 10px 30px rgba(0,0,0,0.3),
                 0 0 50px rgba(255,107,53,0.3),
@@ -209,14 +209,14 @@
             color: white;
             padding: 20px;
             border-radius: 10px;
-            margin-bottom: 25px;
+            margin-bottom: 15px; /* Reduced margin */
             position: relative;
             box-shadow: 0 4px 15px rgba(138,43,226,0.4);
             border: 2px solid gold;
         }
         .player-info h1 {
             margin: 0;
-            font-size: 28px; /* Increased font size */
+            font-size: 28px;
             font-weight: 700;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
             background: linear-gradient(45deg, gold, #ffd700, #fffacd);
@@ -226,7 +226,7 @@
         }
         .player-info h2 {
             margin: 10px 0 0 0;
-            font-size: 24px; /* Increased font size */
+            font-size: 24px;
             font-weight: 600;
             color: #fffacd;
             text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
@@ -234,7 +234,7 @@
 
         .tambola-ticket {
             border-collapse: collapse;
-            margin: 25px auto;
+            margin: 20px auto; /* Reduced margin */
             background: rgba(255, 255, 255, 0.95);
             border: 3px solid #8a2be2;
             border-radius: 10px;
@@ -245,11 +245,11 @@
         }
         .tambola-ticket td {
             width: 11%;
-            height: 70px; /* Increased height */
+            height: 70px;
             border: 2px solid #da70d6;
             text-align: center;
             font-weight: 700;
-            font-size: 22px; /* Increased font size */
+            font-size: 22px;
             position: relative;
             transition: all 0.3s ease;
             background: white;
@@ -325,7 +325,7 @@
             background: linear-gradient(135deg, #e6e6fa 0%, #d8bfd8 100%);
             padding: 20px;
             border-radius: 10px;
-            margin-top: 25px;
+            margin-top: 20px; /* Reduced margin */
             text-align: left;
             border-left: 5px solid #8a2be2;
             position: relative;
@@ -336,7 +336,7 @@
             margin-bottom: 15px;
             text-align: center;
             font-weight: 700;
-            font-size: 20px; /* Increased font size */
+            font-size: 20px;
         }
         .instructions ul {
             padding-left: 20px;
@@ -346,7 +346,7 @@
             margin-bottom: 8px;
             line-height: 1.5;
             color: #5d4037;
-            font-size: 16px; /* Increased font size */
+            font-size: 16px;
         }
 
         .counter-container {
@@ -354,7 +354,7 @@
             justify-content: center;
             align-items: center;
             gap: 15px;
-            margin: 20px 0;
+            margin: 15px 0; /* Reduced margin */
         }
         .ticket-count {
             background: linear-gradient(135deg, #8a2be2 0%, #da70d6 100%);
@@ -366,12 +366,12 @@
             box-shadow: 0 4px 15px rgba(138,43,226,0.3);
             position: relative;
             z-index: 2;
-            font-size: 20px; /* Increased font size */
+            font-size: 20px;
             border: 1px solid gold;
         }
         .progress-bar {
-            width: 200px; /* Increased width */
-            height: 25px; /* Increased height */
+            width: 200px;
+            height: 25px;
             background: #e6e6fa;
             border-radius: 12px;
             overflow: hidden;
@@ -386,7 +386,7 @@
         }
 
         .ticket-footer {
-            margin-top: 20px;
+            margin-top: 15px; /* Reduced margin */
             padding-top: 15px;
             border-top: 2px dashed #ffa726;
             color: #5d4037;
@@ -425,76 +425,76 @@
             50% { transform: scale(1.1); }
         }
 
-        /* Live Numbers Section */
+        /* Live Numbers Section - Smaller */
         .live-numbers-section {
             background: linear-gradient(135deg, #2c3e50, #34495e);
             color: white;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
+            padding: 15px; /* Reduced padding */
+            border-radius: 8px; /* Smaller radius */
+            margin: 15px 0; /* Reduced margin */
             border: 2px solid #3498db;
         }
 
         .live-numbers-section h3 {
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 10px; /* Reduced margin */
             color: #e74c3c;
-            font-size: 24px; /* Increased font size */
+            font-size: 18px; /* Smaller font */
         }
 
         .current-number-display {
             text-align: center;
-            margin-bottom: 20px;
-            padding: 20px;
+            margin-bottom: 15px; /* Reduced margin */
+            padding: 15px; /* Reduced padding */
             background: rgba(255,255,255,0.1);
-            border-radius: 10px;
+            border-radius: 8px; /* Smaller radius */
         }
 
         .current-number-display .current-number {
-            font-size: 5em; /* Increased font size */
+            font-size: 3em; /* Smaller font */
             font-weight: bold;
             color: #f39c12;
             text-shadow: 0 0 20px rgba(243, 156, 18, 0.7);
-            margin-bottom: 10px;
+            margin-bottom: 5px; /* Reduced margin */
         }
 
         .current-number-display .number-pronunciation {
-            font-size: 2em; /* Increased font size */
+            font-size: 1.5em; /* Smaller font */
             color: #ecf0f1;
             font-weight: 600;
         }
 
         .called-numbers-grid {
             background: rgba(0,0,0,0.3);
-            padding: 15px;
-            border-radius: 8px;
+            padding: 10px; /* Reduced padding */
+            border-radius: 6px; /* Smaller radius */
         }
 
         .called-numbers-title {
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 8px; /* Reduced margin */
             color: #bdc3c7;
-            font-size: 18px; /* Increased font size */
+            font-size: 14px; /* Smaller font */
         }
 
         .numbers-list {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
-            max-height: 120px;
+            gap: 6px; /* Reduced gap */
+            max-height: 80px; /* Smaller height */
             overflow-y: auto;
-            padding: 10px;
+            padding: 8px; /* Reduced padding */
             background: rgba(255,255,255,0.05);
-            border-radius: 5px;
+            border-radius: 4px; /* Smaller radius */
         }
 
         .number-badge {
             background: #e74c3c;
             color: white;
-            padding: 8px 12px; /* Increased padding */
-            border-radius: 15px;
+            padding: 6px 10px; /* Reduced padding */
+            border-radius: 12px; /* Smaller radius */
             font-weight: bold;
-            font-size: 16px; /* Increased font size */
+            font-size: 14px; /* Smaller font */
             animation: fadeIn 0.5s ease;
         }
 
@@ -508,30 +508,12 @@
             font-style: italic;
             text-align: center;
             width: 100%;
-            font-size: 16px; /* Increased font size */
+            font-size: 14px; /* Smaller font */
         }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: scale(0.8); }
             to { opacity: 1; transform: scale(1); }
-        }
-
-        @media print {
-            .no-print { display: none; }
-            body { 
-                background: white !important;
-                padding: 0;
-            }
-            .ticket-container { 
-                border: 2px solid #000 !important; 
-                box-shadow: none !important;
-                margin: 0 !important;
-                max-width: none !important;
-            }
-            .tambola-ticket td.number.selected {
-                background: #4caf50 !important;
-                color: white !important;
-            }
         }
 
         @media (max-width: 600px) {
@@ -555,7 +537,7 @@
                 gap: 10px;
             }
             .current-number-display .current-number {
-                font-size: 3em;
+                font-size: 2.5em;
             }
         }
 
@@ -610,13 +592,7 @@
             
             <!-- Live Caller Links -->
             <div style="margin-top: 15px; display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;">
-                <a href="/user-caller" target="_blank" class="btn" style="background: #e74c3c; padding: 10px 20px;">
-                    📢 Live Number Caller
-                </a>
-                <a href="/fullscreen-caller" target="_blank" class="btn" style="background: #3498db; padding: 10px 20px;">
-                    🎯 Full Screen Caller
-                </a>
-            </div>
+                          </div>
         </div>
         
         <!-- Live Numbers Display -->
@@ -666,7 +642,7 @@
         
         <div class="no-print">
             <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin: 20px 0;">
-                <button onclick="window.print()" class="btn">🖨️ Print Ticket</button>
+                <!-- Removed Print Ticket Button -->
                 <button onclick="clearSelection()" class="btn btn-secondary">🔄 Clear Marks</button>
                 <a href="/recover" class="btn">🔍 Recover Ticket</a>
                 <a href="/" class="btn">🏠 Home</a>
@@ -674,7 +650,7 @@
         </div>
         
         <div class="instructions">
-            <h3>🎪 Magical Tambola Rules:</h3>
+            <h3>🎪 Diwali Tambola Rules:</h3>
             <ul>
                 <li><strong>Early Five:</strong> First 5 numbers marked</li>
                 <li><strong>Top Line:</strong> Complete first row</li>
@@ -912,7 +888,7 @@
             }
         }
 
-        // Live Number Updates
+        // Live Number Updates - REMOVED AUTO-MARKING
         function updateLiveNumbers() {
             console.log('Updating live numbers...');
             
@@ -925,21 +901,10 @@
                     document.getElementById('current-number-display').textContent = data.number;
                     document.getElementById('current-pronunciation').textContent = data.number_text || '';
                     
-                    // Auto-mark number on ticket if it exists and not already marked
-                    const numberCell = document.querySelector(`[data-number="${data.number}"]`);
-                    if (numberCell && !selectedNumbers.has(data.number)) {
-                        console.log('Auto-marking number:', data.number);
-                        selectedNumbers.add(data.number);
-                        numberCell.classList.add('selected');
-                        saveSelection();
-                        updateDisplay();
-                        
-                        // Trigger Disney effect
-                        const rect = numberCell.getBoundingClientRect();
-                        const x = rect.left + rect.width / 2;
-                        const y = rect.top + rect.height / 2;
-                        launchDisneyRocket(x, y);
-                    }
+                    // REMOVED AUTO-MARKING CODE
+                    // Numbers will NOT be automatically marked anymore
+                    // Users must click manually to mark numbers
+                    
                 } else {
                     document.getElementById('current-number-display').textContent = '--';
                     document.getElementById('current-pronunciation').textContent = 'Waiting for numbers...';
@@ -977,7 +942,7 @@
             updateLiveNumbers();
             setInterval(updateLiveNumbers, 3000); // Update every 3 seconds
             
-            // Magical number clicks
+            // Magical number clicks - MANUAL MARKING ONLY
             document.querySelectorAll('.tambola-ticket td.number').forEach(cell => {
                 cell.addEventListener('click', function(e) {
                     const number = parseInt(this.getAttribute('data-number'));
