@@ -946,6 +946,7 @@ def reset_numbers_route():
         return jsonify({'success': True, 'message': 'All numbers reset!'})
     else:
         return jsonify({'success': False, 'message': 'Error resetting numbers'})
+        
 def call_number(manual_number=None):
     """Call a number - either manual or random"""
     try:
