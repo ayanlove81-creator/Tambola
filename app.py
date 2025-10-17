@@ -584,43 +584,140 @@ def check_prize_claim(ticket_code, prize_type):
     ).fetchone()
     db.close()
     return existing is not None
+def get_prize_claims():
+    """Get all prize claims with user details"""
+    db = get_db()
+    claims = db.execute('''
+        SELECT p.*, u.name 
+        FROM prizes p 
+        JOIN users u ON p.user_id = u.id 
+        ORDER BY p.claimed_at DESC
+    ''').fetchall()
+    db.close()
+    return claims
 
-def claim_prize(user_id, ticket_code, prize_type):
-    """Claim a prize for a user"""
-    # Check if this prize type is already claimed by anyone
+def get_pending_claims():
+    """Get all pending prize claims for admin approval"""
+    db = get_db()
+    claims = db.execute('''
+        SELECT p.*, u.name 
+        FROM prizes p 
+        JOIN users u ON p.user_id = u.id 
+        WHERE p.status = 'pending'
+        ORDER BY p.claimed_at ASC
+    ''').fetchall()
+    db.close()
+    return claims
+
+def get_approved_claims():
+    """Get all approved prize claims"""
+    db = get_db()
+    claims = db.execute('''
+        SELECT p.*, u.name 
+        FROM prizes p 
+        JOIN users u ON p.user_id = u.id 
+        WHERE p.status = 'approved'
+        ORDER BY p.approved_at DESC
+    ''').fetchall()
+    db.close()
+    return claims
+
+def check_prize_claim(ticket_code, prize_type):
+    """Check if a prize type has already been approved"""
     db = get_db()
     existing = db.execute(
-        'SELECT * FROM prizes WHERE prize_type = ?', 
+        'SELECT * FROM prizes WHERE prize_type = ? AND status = "approved"', 
+        [prize_type]
+    ).fetchone()
+    db.close()
+    return existing is not None
+
+def claim_prize(user_id, ticket_code, prize_type, user_name):
+    """Submit a prize claim for admin approval"""
+    # Check if this prize type is already approved
+    db = get_db()
+    existing_approved = db.execute(
+        'SELECT * FROM prizes WHERE prize_type = ? AND status = "approved"', 
         [prize_type]
     ).fetchone()
     
-    if existing:
+    if existing_approved:
         db.close()
-        return False, "This prize has already been claimed by someone else!"
+        return False, "This prize has already been claimed and approved!"
     
-    # Check if this user already claimed this prize type
+    # Check if user already has a pending or approved claim for this prize
     user_existing = db.execute(
-        'SELECT * FROM prizes WHERE user_id = ? AND prize_type = ?', 
+        'SELECT * FROM prizes WHERE user_id = ? AND prize_type = ? AND status IN ("pending", "approved")', 
         [user_id, prize_type]
     ).fetchone()
     
     if user_existing:
         db.close()
-        return False, "You have already claimed this prize!"
+        if user_existing['status'] == 'pending':
+            return False, "You already have a pending claim for this prize!"
+        else:
+            return False, "You have already claimed this prize!"
     
-    # Claim the prize
+    # Submit the claim for approval
     try:
         db.execute(
-            'INSERT INTO prizes (user_id, ticket_code, prize_type) VALUES (?, ?, ?)',
-            [user_id, ticket_code, prize_type]
+            'INSERT INTO prizes (user_id, ticket_code, user_name, prize_type, status) VALUES (?, ?, ?, ?, "pending")',
+            [user_id, ticket_code, user_name, prize_type]
         )
         db.commit()
         db.close()
-        return True, "Prize claimed successfully!"
+        return True, "Prize claim submitted for admin approval!"
     except Exception as e:
         db.close()
-        return False, f"Error claiming prize: {str(e)}"
+        return False, f"Error submitting claim: {str(e)}"
 
+def approve_prize_claim(claim_id, approved_by="admin"):
+    """Approve a prize claim"""
+    db = get_db()
+    
+    # Check if this prize type is already approved by someone else
+    claim = db.execute('SELECT * FROM prizes WHERE id = ?', [claim_id]).fetchone()
+    if not claim:
+        db.close()
+        return False, "Claim not found"
+    
+    existing_approved = db.execute(
+        'SELECT * FROM prizes WHERE prize_type = ? AND status = "approved" AND id != ?', 
+        [claim['prize_type'], claim_id]
+    ).fetchone()
+    
+    if existing_approved:
+        db.close()
+        return False, "This prize has already been approved for someone else!"
+    
+    # Approve the claim
+    try:
+        db.execute(
+            'UPDATE prizes SET status = "approved", approved_at = CURRENT_TIMESTAMP, approved_by = ? WHERE id = ?',
+            [approved_by, claim_id]
+        )
+        db.commit()
+        db.close()
+        return True, "Prize claim approved successfully!"
+    except Exception as e:
+        db.close()
+        return False, f"Error approving claim: {str(e)}"
+
+def reject_prize_claim(claim_id):
+    """Reject a prize claim"""
+    db = get_db()
+    try:
+        db.execute(
+            'UPDATE prizes SET status = "rejected" WHERE id = ?',
+            [claim_id]
+        )
+        db.commit()
+        db.close()
+        return True, "Prize claim rejected!"
+    except Exception as e:
+        db.close()
+        return False, f"Error rejecting claim: {str(e)}"
+        
 def check_ticket_patterns(ticket, called_numbers):
     """Check which patterns are completed on the ticket"""
     patterns = {
