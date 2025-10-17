@@ -771,7 +771,9 @@ def claim_prize_route():
     prize_type = request.form.get('prize_type')
     
     if not ticket_code or not prize_type:
-        return redirect('/ticket')
+        session['claim_message'] = "Missing ticket code or prize type"
+        session['claim_success'] = False
+        return redirect(f'/ticket?code={session.get("ticket_code", "")}')
     
     db = get_db()
     user = db.execute('SELECT * FROM users WHERE ticket_code = ? AND device_id = ?', 
@@ -779,12 +781,24 @@ def claim_prize_route():
     
     if not user:
         db.close()
-        return redirect('/ticket')
+        session['claim_message'] = "User not found"
+        session['claim_success'] = False
+        return redirect(f'/ticket?code={session.get("ticket_code", "")}')
+    
+    # Check if pattern is actually completed
+    called_numbers = get_called_numbers()
+    ticket = json.loads(user['ticket_data'])
+    patterns = check_ticket_patterns(ticket, called_numbers)
+    
+    if not patterns.get(prize_type):
+        db.close()
+        session['claim_message'] = f"Pattern {prize_type.replace('_', ' ')} not completed yet!"
+        session['claim_success'] = False
+        return redirect(f'/ticket?code={ticket_code}')
     
     success, message = claim_prize(user['id'], ticket_code, prize_type, user['name'])
     db.close()
     
-    # Store message in session to display on redirect
     session['claim_message'] = message
     session['claim_success'] = success
     
