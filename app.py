@@ -1100,46 +1100,56 @@ def reset_called_numbers():
     return True
 
 def get_number_text(number):
-    """Convert number to proper pronunciation like '2 3 twenty-three'"""
+    """Convert number to proper pronunciation like '2 3 twenty-three' for Tamil style"""
     if not number:
         return ""
     
-    # For numbers 1-90, we want to pronounce each digit separately for numbers 1-9
-    # and as whole numbers for 10-90
-    
+    # For single digit numbers (1-9) - pronounce as single digit
     if 1 <= number <= 9:
-        # Single digit - pronounce as is
         number_words = {
             1: "One", 2: "Two", 3: "Three", 4: "Four", 5: "Five",
             6: "Six", 7: "Seven", 8: "Eight", 9: "Nine"
         }
         return number_words.get(number, str(number))
     
+    # For two-digit numbers (10-90)
     elif 10 <= number <= 90:
-        # Two-digit numbers - pronounce as whole number
-        number_words = {
-            10: "Ten", 11: "Eleven", 12: "Twelve", 13: "Thirteen", 
-            14: "Fourteen", 15: "Fifteen", 16: "Sixteen", 17: "Seventeen",
-            18: "Eighteen", 19: "Nineteen", 20: "Twenty", 30: "Thirty",
-            40: "Forty", 50: "Fifty", 60: "Sixty", 70: "Seventy",
-            80: "Eighty", 90: "Ninety"
-        }
+        # Special cases
+        if number == 10: return "Ten"
+        if number == 11: return "Eleven"
+        if number == 12: return "Twelve"
+        if number == 13: return "Thirteen"
+        if number == 14: return "Fourteen"
+        if number == 15: return "Fifteen"
+        if number == 16: return "Sixteen"
+        if number == 17: return "Seventeen"
+        if number == 18: return "Eighteen"
+        if number == 19: return "Nineteen"
+        if number == 20: return "Twenty"
+        if number == 30: return "Thirty"
+        if number == 40: return "Forty"
+        if number == 50: return "Fifty"
+        if number == 60: return "Sixty"
+        if number == 70: return "Seventy"
+        if number == 80: return "Eighty"
+        if number == 90: return "Ninety"
         
-        if number in number_words:
-            return number_words[number]
-        
-        # For numbers like 23, 45, etc.
+        # For numbers like 23, 45, etc. - combine tens and units
         tens = (number // 10) * 10
         units = number % 10
         
-        tens_word = number_words.get(tens, "")
-        units_word = {
+        tens_words = {
+            20: "Twenty", 30: "Thirty", 40: "Forty", 50: "Fifty",
+            60: "Sixty", 70: "Seventy", 80: "Eighty"
+        }
+        
+        units_words = {
             1: "One", 2: "Two", 3: "Three", 4: "Four", 5: "Five",
             6: "Six", 7: "Seven", 8: "Eight", 9: "Nine"
-        }.get(units, "")
+        }
         
-        if tens_word and units_word:
-            return f"{tens_word} {units_word}"
+        if tens in tens_words and units in units_words:
+            return f"{tens_words[tens]}-{units_words[units]}"
         else:
             return str(number)
     
