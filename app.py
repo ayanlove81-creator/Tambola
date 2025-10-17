@@ -933,11 +933,44 @@ def caller_dashboard():
                          total_called=len(called_numbers),
                          remaining=90 - len(called_numbers))
 
-@app.route('/called_numbers')
-def get_called_numbers_route():
-    """API to get called numbers"""
-    numbers = get_called_numbers()
-    return jsonify({'called_numbers': numbers})
+@app.route('/call_number', methods=['POST'])
+def call_number_route():
+    """Call a number (manual or auto)"""
+    try:
+        number = request.form.get('number', type=int)
+        auto = request.form.get('auto') == 'true'
+        
+        if auto:
+            number, message = call_number()  # Auto-call
+        else:
+            if number is None:
+                return jsonify({
+                    'success': False,
+                    'message': "Please provide a number"
+                })
+            number, message = call_number(number)  # Manual call
+        
+        if number:
+            number_text = get_number_text(number)
+            
+            return jsonify({
+                'success': True,
+                'number': number,
+                'number_text': number_text,
+                'message': message,
+                'total_called': len(get_called_numbers())
+            })
+        else:
+            return jsonify({
+                'success': False,
+                'message': message
+            })
+    except Exception as e:
+        print(f"Error in call_number_route: {e}")
+        return jsonify({
+            'success': False,
+            'message': f"Server error: {str(e)}"
+        })
 
 @app.route('/reset_numbers', methods=['POST'])
 def reset_numbers_route():
