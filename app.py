@@ -1055,37 +1055,29 @@ def reset_called_numbers():
     return True
 
 def get_number_text(number):
-    """Convert number to spoken text - improved version"""
+    """Simple number pronunciation that always works"""
     try:
-        if number < 1 or number > 90:
-            return str(number)
-            
-        # Handle numbers 1-19
-        if number <= 19:
-            numbers_1_19 = [
-                "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine",
-                "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", 
-                "sixteen", "seventeen", "eighteen", "nineteen"
-            ]
-            return numbers_1_19[number]
+        # Simple mapping for common numbers
+        number_words = {
+            1: "one", 2: "two", 3: "three", 4: "four", 5: "five",
+            6: "six", 7: "seven", 8: "eight", 9: "nine", 10: "ten",
+            11: "eleven", 12: "twelve", 13: "thirteen", 14: "fourteen", 15: "fifteen",
+            16: "sixteen", 17: "seventeen", 18: "eighteen", 19: "nineteen", 20: "twenty",
+            30: "thirty", 40: "forty", 50: "fifty", 60: "sixty", 70: "seventy", 80: "eighty", 90: "ninety"
+        }
         
-        # Handle numbers 20-90
-        tens = number // 10
-        units = number % 10
+        if number in number_words:
+            return number_words[number]
         
-        tens_words = ["twenty", "thirty", "forty", "fifty", "sixty", "seventy", "eighty", "ninety"]
-        
-        if tens >= 2 and tens <= 9:
-            tens_word = tens_words[tens - 2]
-            if units == 0:
-                return tens_word
-            else:
-                units_words = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"]
-                return f"{tens_word} {units_words[units]}"
+        # For numbers 21-29, 31-39, etc.
+        if 21 <= number <= 99:
+            tens = (number // 10) * 10
+            units = number % 10
+            if tens in number_words and units in number_words:
+                return f"{number_words[tens]} {number_words[units]}"
         
         return str(number)
-    except Exception as e:
-        print(f"Error in get_number_text for {number}: {e}")
+    except:
         return str(number)
     
 @app.route('/health')
