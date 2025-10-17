@@ -60,6 +60,15 @@
             font-weight: bold;
             color: #2c3e50;
         }
+        @keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.announcement-display {
+    transition: all 0.3s ease;
+}
         
         .main-display {
             text-align: center;
@@ -747,6 +756,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (e.key === 'Enter') {
                 callNumber('manual');
             }
+            
         });
     </script>
 </body>
