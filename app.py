@@ -639,7 +639,43 @@ def stats():
         'total_users': total_users,
         'unique_tickets_generated': total_unique_tickets
     }
-
+    
+def initialize_prizes_table():
+    """Ensure prizes table is properly initialized"""
+    conn = sqlite3.connect(get_db_path())
+    c = conn.cursor()
+    
+    # Check if prizes table has the correct structure
+    try:
+        c.execute("SELECT * FROM prizes LIMIT 1")
+    except sqlite3.OperationalError:
+        # Table doesn't exist or has wrong structure, recreate it
+        c.execute('DROP TABLE IF EXISTS prizes')
+        c.execute('''CREATE TABLE prizes
+                     (id INTEGER PRIMARY KEY AUTOINCREMENT,
+                      user_id INTEGER,
+                      ticket_code TEXT,
+                      prize_type TEXT NOT NULL,
+                      claimed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                      FOREIGN KEY (user_id) REFERENCES users (id))''')
+        conn.commit()
+    
+    conn.close()
+    
+@app.route('/admin/reset-db')
+def reset_database():
+    """Reset database (for development only)"""
+    conn = sqlite3.connect(get_db_path())
+    c = conn.cursor()
+    c.execute('DROP TABLE IF EXISTS prizes')
+    c.execute('DROP TABLE IF EXISTS used_tickets')
+    c.execute('DROP TABLE IF EXISTS users')
+    conn.commit()
+    conn.close()
+    
+    init_db()
+    return "Database reset successfully"
+    
 @app.route('/health')
 def health():
     return 'OK'
