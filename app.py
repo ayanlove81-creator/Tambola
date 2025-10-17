@@ -994,6 +994,18 @@ def call_number(manual_number=None):
         print(f"Error in call_number: {e}")
         return None, f"Error calling number: {str(e)}"
         
+@app.route('/fullscreen-caller')
+def fullscreen_caller():
+    """Full screen number caller display"""
+    called_numbers = get_called_numbers()
+    recent_numbers = called_numbers[-5:] if called_numbers else []
+    
+    return render_template('fullscreen_caller.html',
+                         called_numbers=called_numbers,
+                         recent_numbers=recent_numbers,
+                         total_called=len(called_numbers),
+                         remaining=90 - len(called_numbers))
+    
 @app.route('/last_number')
 def get_last_number():
     """Get the last called number"""
