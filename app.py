@@ -1055,27 +1055,13 @@ def reset_called_numbers():
     return True
 
 def get_number_text(number):
-    """Simple number pronunciation that always works"""
+    """Simple and reliable number pronunciation"""
     try:
-        # Simple mapping for common numbers
-        number_words = {
-            1: "one", 2: "two", 3: "three", 4: "four", 5: "five",
-            6: "six", 7: "seven", 8: "eight", 9: "nine", 10: "ten",
-            11: "eleven", 12: "twelve", 13: "thirteen", 14: "fourteen", 15: "fifteen",
-            16: "sixteen", 17: "seventeen", 18: "eighteen", 19: "nineteen", 20: "twenty",
-            30: "thirty", 40: "forty", 50: "fifty", 60: "sixty", 70: "seventy", 80: "eighty", 90: "ninety"
-        }
-        
-        if number in number_words:
-            return number_words[number]
-        
-        # For numbers 21-29, 31-39, etc.
-        if 21 <= number <= 99:
-            tens = (number // 10) * 10
-            units = number % 10
-            if tens in number_words and units in number_words:
-                return f"{number_words[tens]} {number_words[units]}"
-        
+        # Handle numbers 1-90
+        if 1 <= number <= 90:
+            # Simple approach - just return the number as string
+            # You can add proper pronunciation later
+            return str(number)
         return str(number)
     except:
         return str(number)
