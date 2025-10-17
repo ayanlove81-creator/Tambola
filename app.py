@@ -320,7 +320,141 @@ def count_ticket_numbers(ticket):
             print(f"ERROR: Column {i} has {count} numbers (max 3)")
     
     return total
+def claim_prize(user_id, ticket_code, prize_type, user_name):
+    """Submit a prize claim for admin approval"""
+    # Check if this prize type is already approved
+    db = get_db()
+    existing_approved = db.execute(
+        'SELECT * FROM prizes WHERE prize_type = ? AND status = "approved"', 
+        [prize_type]
+    ).fetchone()
+    
+    if existing_approved:
+        db.close()
+        return False, "This prize has already been claimed and approved!"
+    
+    # Check if user already has a pending or approved claim for this prize
+    user_existing = db.execute(
+        'SELECT * FROM prizes WHERE user_id = ? AND prize_type = ? AND status IN ("pending", "approved")', 
+        [user_id, prize_type]
+    ).fetchone()
+    
+    if user_existing:
+        db.close()
+        if user_existing['status'] == 'pending':
+            return False, "You already have a pending claim for this prize!"
+        else:
+            return False, "You have already claimed this prize!"
+    
+    # Submit the claim for approval
+    try:
+        db.execute(
+            'INSERT INTO prizes (user_id, ticket_code, user_name, prize_type, status) VALUES (?, ?, ?, ?, "pending")',
+            [user_id, ticket_code, user_name, prize_type]
+        )
+        db.commit()
+        db.close()
+        return True, "Prize claim submitted for admin approval!"
+    except Exception as e:
+        db.close()
+        return False, f"Error submitting claim: {str(e)}"
 
+def get_prize_claims():
+    """Get all prize claims with user details"""
+    db = get_db()
+    claims = db.execute('''
+        SELECT p.*, u.name 
+        FROM prizes p 
+        JOIN users u ON p.user_id = u.id 
+        ORDER BY p.claimed_at DESC
+    ''').fetchall()
+    db.close()
+    return claims
+
+def get_pending_claims():
+    """Get all pending prize claims for admin approval"""
+    db = get_db()
+    claims = db.execute('''
+        SELECT p.*, u.name 
+        FROM prizes p 
+        JOIN users u ON p.user_id = u.id 
+        WHERE p.status = 'pending'
+        ORDER BY p.claimed_at ASC
+    ''').fetchall()
+    db.close()
+    return claims
+
+def get_approved_claims():
+    """Get all approved prize claims"""
+    db = get_db()
+    claims = db.execute('''
+        SELECT p.*, u.name 
+        FROM prizes p 
+        JOIN users u ON p.user_id = u.id 
+        WHERE p.status = 'approved'
+        ORDER BY p.approved_at DESC
+    ''').fetchall()
+    db.close()
+    return claims
+
+def check_ticket_patterns(ticket, called_numbers):
+    """Check which patterns are completed on the ticket"""
+    patterns = {
+        'first_line': all(num == 0 or num in called_numbers for num in ticket[0]),
+        'middle_line': all(num == 0 or num in called_numbers for num in ticket[1]),
+        'bottom_line': all(num == 0 or num in called_numbers for num in ticket[2]),
+        'early_five': len([num for row in ticket for num in row if num != 0 and num in called_numbers]) >= 5,
+        'full_house': all(num == 0 or num in called_numbers for row in ticket for num in row)
+    }
+    return patterns
+
+def approve_prize_claim(claim_id, approved_by="admin"):
+    """Approve a prize claim"""
+    db = get_db()
+    
+    # Check if this prize type is already approved by someone else
+    claim = db.execute('SELECT * FROM prizes WHERE id = ?', [claim_id]).fetchone()
+    if not claim:
+        db.close()
+        return False, "Claim not found"
+    
+    existing_approved = db.execute(
+        'SELECT * FROM prizes WHERE prize_type = ? AND status = "approved" AND id != ?', 
+        [claim['prize_type'], claim_id]
+    ).fetchone()
+    
+    if existing_approved:
+        db.close()
+        return False, "This prize has already been approved for someone else!"
+    
+    # Approve the claim
+    try:
+        db.execute(
+            'UPDATE prizes SET status = "approved", approved_at = CURRENT_TIMESTAMP, approved_by = ? WHERE id = ?',
+            [approved_by, claim_id]
+        )
+        db.commit()
+        db.close()
+        return True, "Prize claim approved successfully!"
+    except Exception as e:
+        db.close()
+        return False, f"Error approving claim: {str(e)}"
+
+def reject_prize_claim(claim_id):
+    """Reject a prize claim"""
+    db = get_db()
+    try:
+        db.execute(
+            'UPDATE prizes SET status = "rejected" WHERE id = ?',
+            [claim_id]
+        )
+        db.commit()
+        db.close()
+        return True, "Prize claim rejected!"
+    except Exception as e:
+        db.close()
+        return False, f"Error rejecting claim: {str(e)}"
+        
 def generate_qr(url):
     """Generate QR code as base64"""
     try:
@@ -473,33 +607,7 @@ def show_ticket():
         print(f"Error loading ticket: {e}")
         return "Error loading ticket. Please register again."
 
-@app.route('/claim_prize', methods=['POST'])
-def claim_prize_route():
-    if 'device_id' not in session:
-        return redirect('/')
-    
-    ticket_code = request.form.get('ticket_code')
-    prize_type = request.form.get('prize_type')
-    
-    if not ticket_code or not prize_type:
-        return redirect('/ticket')
-    
-    db = get_db()
-    user = db.execute('SELECT * FROM users WHERE ticket_code = ? AND device_id = ?', 
-                     [ticket_code, session['device_id']]).fetchone()
-    
-    if not user:
-        db.close()
-        return redirect('/ticket')
-    
-    success, message = claim_prize(user['id'], ticket_code, prize_type)
-    db.close()
-    
-    # Store message in session to display on redirect
-    session['claim_message'] = message
-    session['claim_success'] = success
-    
-    return redirect(f'/ticket?code={ticket_code}')
+
     
 @app.route('/prizes')
 def show_prizes():
@@ -543,104 +651,54 @@ def export_data():
     
 @app.route('/admin')
 def admin():
-    db = get_db()
-    
-    # Get all users with their tickets
-    users = db.execute('SELECT * FROM users ORDER BY created_at DESC').fetchall()
-    
-    # Get statistics
-    total_tickets = db.execute('SELECT COUNT(*) as count FROM used_tickets').fetchone()['count']
-    total_users = db.execute('SELECT COUNT(*) as count FROM users').fetchone()['count']
-    
-    # Get prize claims
-    pending_claims = get_pending_claims()
-    approved_claims = get_approved_claims()
-    
-    db.close()
-    
-    user_list = []
-    for user in users:
-        try:
-            ticket_data = json.loads(user['ticket_data'])
-            user_list.append({
-                'id': user['id'],
-                'name': user['name'],
-                'ticket': ticket_data,
-                'ticket_code': user['ticket_code'],
-                'device_id': user['device_id'],
-                'created_at': user['created_at'],
-                'numbers_count': count_ticket_numbers(ticket_data),
-                'ticket_url': f"/ticket?code={user['ticket_code']}"
-            })
-        except Exception as e:
-            print(f"Error processing user {user['id']}: {e}")
-            continue
-    
-    return render_template('admin.html', 
-                         users=user_list, 
-                         total_tickets=total_tickets,
-                         total_users=total_users,
-                         pending_claims=pending_claims,
-                         approved_claims=approved_claims)
-
-def get_prize_claims():
-    """Get all prize claims with user details"""
-    db = get_db()
-    claims = db.execute('''
-        SELECT p.*, u.name 
-        FROM prizes p 
-        JOIN users u ON p.user_id = u.id 
-        ORDER BY p.claimed_at DESC
-    ''').fetchall()
-    db.close()
-    return claims
-
-def check_prize_claim(ticket_code, prize_type):
-    """Check if a prize type has already been claimed"""
-    db = get_db()
-    existing = db.execute(
-        'SELECT * FROM prizes WHERE prize_type = ? AND ticket_code = ?', 
-        [prize_type, ticket_code]
-    ).fetchone()
-    db.close()
-    return existing is not None
-def get_prize_claims():
-    """Get all prize claims with user details"""
-    db = get_db()
-    claims = db.execute('''
-        SELECT p.*, u.name 
-        FROM prizes p 
-        JOIN users u ON p.user_id = u.id 
-        ORDER BY p.claimed_at DESC
-    ''').fetchall()
-    db.close()
-    return claims
-
-def get_pending_claims():
-    """Get all pending prize claims for admin approval"""
-    db = get_db()
-    claims = db.execute('''
-        SELECT p.*, u.name 
-        FROM prizes p 
-        JOIN users u ON p.user_id = u.id 
-        WHERE p.status = 'pending'
-        ORDER BY p.claimed_at ASC
-    ''').fetchall()
-    db.close()
-    return claims
-
-def get_approved_claims():
-    """Get all approved prize claims"""
-    db = get_db()
-    claims = db.execute('''
-        SELECT p.*, u.name 
-        FROM prizes p 
-        JOIN users u ON p.user_id = u.id 
-        WHERE p.status = 'approved'
-        ORDER BY p.approved_at DESC
-    ''').fetchall()
-    db.close()
-    return claims
+    try:
+        db = get_db()
+        
+        # Get all users with their tickets
+        users = db.execute('SELECT * FROM users ORDER BY created_at DESC').fetchall()
+        
+        # Get statistics
+        total_tickets = db.execute('SELECT COUNT(*) as count FROM used_tickets').fetchone()['count']
+        total_users = db.execute('SELECT COUNT(*) as count FROM users').fetchone()['count']
+        
+        # Get recent registrations (last 24 hours)
+        recent_users = db.execute(
+            'SELECT COUNT(*) as count FROM users WHERE created_at >= datetime("now", "-1 day")'
+        ).fetchone()['count']
+        
+        # Get prize claims
+        pending_claims = get_pending_claims()
+        approved_claims = get_approved_claims()
+        
+        db.close()
+        
+        user_list = []
+        for user in users:
+            try:
+                ticket_data = json.loads(user['ticket_data'])
+                user_list.append({
+                    'id': user['id'],
+                    'name': user['name'],
+                    'ticket': ticket_data,
+                    'ticket_code': user['ticket_code'],
+                    'device_id': user['device_id'],
+                    'created_at': user['created_at'],
+                    'numbers_count': count_ticket_numbers(ticket_data),
+                    'ticket_url': f"/ticket?code={user['ticket_code']}"
+                })
+            except Exception as e:
+                print(f"Error processing user {user['id']}: {e}")
+                continue
+        
+        return render_template('admin.html', 
+                             users=user_list, 
+                             total_tickets=total_tickets,
+                             total_users=total_users,
+                             recent_users=recent_users,
+                             pending_claims=pending_claims,
+                             approved_claims=approved_claims)
+    except Exception as e:
+        return f"Error loading admin page: {str(e)}", 500
 
 def check_prize_claim(ticket_code, prize_type):
     """Check if a prize type has already been approved"""
@@ -680,63 +738,8 @@ def claim_prize_route():
     
     return redirect(f'/ticket?code={ticket_code}')
 
-def approve_prize_claim(claim_id, approved_by="admin"):
-    """Approve a prize claim"""
-    db = get_db()
-    
-    # Check if this prize type is already approved by someone else
-    claim = db.execute('SELECT * FROM prizes WHERE id = ?', [claim_id]).fetchone()
-    if not claim:
-        db.close()
-        return False, "Claim not found"
-    
-    existing_approved = db.execute(
-        'SELECT * FROM prizes WHERE prize_type = ? AND status = "approved" AND id != ?', 
-        [claim['prize_type'], claim_id]
-    ).fetchone()
-    
-    if existing_approved:
-        db.close()
-        return False, "This prize has already been approved for someone else!"
-    
-    # Approve the claim
-    try:
-        db.execute(
-            'UPDATE prizes SET status = "approved", approved_at = CURRENT_TIMESTAMP, approved_by = ? WHERE id = ?',
-            [approved_by, claim_id]
-        )
-        db.commit()
-        db.close()
-        return True, "Prize claim approved successfully!"
-    except Exception as e:
-        db.close()
-        return False, f"Error approving claim: {str(e)}"
-
-def reject_prize_claim(claim_id):
-    """Reject a prize claim"""
-    db = get_db()
-    try:
-        db.execute(
-            'UPDATE prizes SET status = "rejected" WHERE id = ?',
-            [claim_id]
-        )
-        db.commit()
-        db.close()
-        return True, "Prize claim rejected!"
-    except Exception as e:
-        db.close()
-        return False, f"Error rejecting claim: {str(e)}"
         
-def check_ticket_patterns(ticket, called_numbers):
-    """Check which patterns are completed on the ticket"""
-    patterns = {
-        'first_line': all(num == 0 or num in called_numbers for num in ticket[0]),
-        'middle_line': all(num == 0 or num in called_numbers for num in ticket[1]),
-        'bottom_line': all(num == 0 or num in called_numbers for num in ticket[2]),
-        'early_five': len([num for row in ticket for num in row if num != 0 and num in called_numbers]) >= 5,
-        'full_house': all(num == 0 or num in called_numbers for row in ticket for num in row)
-    }
-    return patterns
+
 @app.route('/admin/approve_claim/<int:claim_id>')
 def approve_claim(claim_id):
     """Admin route to approve a prize claim"""
@@ -811,6 +814,15 @@ def reset_database():
     init_db()
     return "Database reset successfully"
     
+@app.route('/admin/fix-db')
+def fix_database():
+    """Fix database schema issues"""
+    try:
+        init_db()  # This will recreate any missing tables
+        return "Database fixed successfully! Tables: users, used_tickets, prizes"
+    except Exception as e:
+        return f"Error fixing database: {str(e)}"
+        
 @app.route('/health')
 def health():
     return 'OK'
