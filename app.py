@@ -24,7 +24,7 @@ def init_db():
     conn = sqlite3.connect(get_db_path())
     c = conn.cursor()
     
-    # Create tables with error handling
+    # Create all tables
     tables = [
         '''CREATE TABLE IF NOT EXISTS users
            (id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -48,20 +48,13 @@ def init_db():
             status TEXT DEFAULT 'pending',
             claimed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
             approved_at TIMESTAMP NULL,
-            approved_by TEXT NULL,
-            FOREIGN KEY (user_id) REFERENCES users (id))''',
+            approved_by TEXT NULL)''',
             
         '''CREATE TABLE IF NOT EXISTS called_numbers
            (id INTEGER PRIMARY KEY AUTOINCREMENT,
             number INTEGER NOT NULL,
             called_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            called_by TEXT DEFAULT 'system')''',
-            
-        '''CREATE TABLE IF NOT EXISTS game_state
-           (id INTEGER PRIMARY KEY AUTOINCREMENT,
-            key TEXT UNIQUE NOT NULL,
-            value TEXT NOT NULL,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP)'''
+            called_by TEXT DEFAULT 'system')'''
     ]
     
     for table_sql in tables:
