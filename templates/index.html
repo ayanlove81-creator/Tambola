@@ -1,39 +1,64 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Happy Diwali
-    Welcome to TCI Indian Community </title>
-    
+    <title>Happy Diwali - Welcome to TCI Indian Community</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
             font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             margin: 0;
             padding: 20px;
             min-height: 100vh;
+            background: #0a0a2a; /* Dark blue night sky */
+            overflow-x: hidden;
+            position: relative;
         }
+        
+        /* Diwali background with gradient and lights */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 80%, rgba(255,215,0,0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255,69,0,0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(75,0,130,0.3) 0%, transparent 50%),
+                linear-gradient(135deg, #0a0a2a 0%, #1a1a4a 100%);
+            z-index: -2;
+        }
+        
+        /* Container styling */
         .container {
             max-width: 800px;
             margin: 0 auto;
-            background: white;
+            background: rgba(255, 255, 255, 0.95);
             padding: 30px;
             border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             text-align: center;
+            position: relative;
+            z-index: 1;
         }
+        
         h1 {
-            color: #2c3e50;
+            color: #ff8c00;
             margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(255, 140, 0, 0.5);
         }
+        
         .subtitle {
             color: #7f8c8d;
             margin-bottom: 30px;
             font-size: 18px;
         }
+        
         .qr-section {
             margin: 30px 0;
         }
+        
         .qr-code {
             max-width: 300px;
             width: 100%;
@@ -41,8 +66,9 @@
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
+        
         .btn {
-            background: #3498db;
+            background: #ff8c00;
             color: white;
             padding: 15px 30px;
             text-decoration: none;
@@ -50,39 +76,51 @@
             display: inline-block;
             margin: 10px;
             font-size: 16px;
-            transition: background 0.3s;
+            transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(255, 140, 0, 0.3);
         }
+        
         .btn:hover {
-            background: #2980b9;
+            background: #ff6a00;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(255, 140, 0, 0.4);
         }
+        
         .instructions {
             background: #f8f9fa;
             padding: 25px;
             border-radius: 10px;
             margin: 30px 0;
             text-align: left;
+            border-left: 5px solid #ff8c00;
         }
+        
         .instructions h3 {
             color: #2c3e50;
             margin-bottom: 15px;
             text-align: center;
         }
+        
         .instructions ul {
             padding-left: 20px;
         }
+        
         .instructions li {
             margin-bottom: 10px;
             line-height: 1.5;
         }
+        
         .feature {
             display: flex;
             align-items: center;
             margin: 10px 0;
         }
+        
         .feature-icon {
             font-size: 24px;
             margin-right: 15px;
         }
+        
         .share-info {
             background: #e8f4f8;
             padding: 15px;
@@ -90,6 +128,97 @@
             margin-top: 20px;
             word-break: break-all;
         }
+        
+        /* Diya (lamp) decorations */
+        .diya {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            z-index: -1;
+        }
+        
+        .diya::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, #ff8c00 0%, #ff4500 70%, transparent 100%);
+            border-radius: 50%;
+            filter: blur(5px);
+            animation: flicker 3s infinite alternate;
+        }
+        
+        @keyframes flicker {
+            0%, 100% { opacity: 0.8; transform: scale(1); }
+            25% { opacity: 1; transform: scale(1.1); }
+            50% { opacity: 0.7; transform: scale(0.9); }
+            75% { opacity: 0.9; transform: scale(1.05); }
+        }
+        
+        /* Firecracker animation */
+        .firecracker {
+            position: fixed;
+            width: 5px;
+            height: 20px;
+            background: linear-gradient(to top, #ff8c00, #ff4500, #ffff00);
+            z-index: -1;
+            bottom: 0;
+        }
+        
+        .spark {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ffff00;
+            border-radius: 50%;
+            box-shadow: 0 0 10px #ffff00;
+        }
+        
+        /* Rocket animation */
+        .rocket {
+            position: fixed;
+            width: 20px;
+            height: 40px;
+            z-index: -1;
+            bottom: -50px;
+        }
+        
+        .rocket-body {
+            width: 100%;
+            height: 80%;
+            background: linear-gradient(to top, #ff8c00, #ff4500);
+            border-radius: 50% 50% 0 0;
+            position: relative;
+        }
+        
+        .rocket-fin {
+            position: absolute;
+            bottom: 0;
+            width: 0;
+            height: 0;
+            border-left: 10px solid transparent;
+            border-right: 10px solid transparent;
+            border-top: 15px solid #ff4500;
+        }
+        
+        .rocket-fire {
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: 20px;
+            background: linear-gradient(to bottom, #ffff00, #ff8c00, #ff4500);
+            border-radius: 0 0 50% 50%;
+            filter: blur(2px);
+            animation: rocketFire 0.5s infinite alternate;
+        }
+        
+        @keyframes rocketFire {
+            0% { height: 15px; opacity: 0.8; }
+            100% { height: 25px; opacity: 1; }
+        }
+        
         @media (max-width: 600px) {
             .container {
                 padding: 20px;
@@ -102,9 +231,12 @@
     </style>
 </head>
 <body>
+    <!-- Diwali decorations will be added by JavaScript -->
+    
     <div class="container">
-        <h1> 🪔 Happy Diwali  🪔
-   <br> Welcome to TCI Indian Community</br> </h1>
+        <h1> 🪔 Happy Diwali 🪔
+            <br> Welcome to TCI Indian Community</br>
+        </h1>
         <p class="subtitle">Get your unique Tambola ticket instantly!</p>
         
         <div class="qr-section">
@@ -119,11 +251,12 @@
             <p style="margin: 20px 0; font-size: 16px;">Scan with your phone camera or click below:</p>
             <a href="{{ qr_url }}" class="btn">Get Your Ticket Now 🎫</a>
         </div>
+        
         <div style="margin-top: 20px;">
-    <a href="/recover" style="color: #3498db; text-decoration: none;">
-        🔍 Lost your ticket? Recover it here
-    </a>
-</div>
+            <a href="/recover" style="color: #ff8c00; text-decoration: none; font-weight: bold;">
+                🔍 Lost your ticket? Recover it here
+            </a>
+        </div>
         
         <div class="instructions">
             <h3>🚀 How to Get Your Ticket</h3>
@@ -148,9 +281,9 @@
                 <span><strong>One ticket per device</strong> - no duplicates</span>
             </div>
             <div class="feature">
-    <span class="feature-icon">🔍</span>
-    <span><strong>Recover tickets</strong> with unique 6-digit codes</span>
-</div>
+                <span class="feature-icon">🔍</span>
+                <span><strong>Recover tickets</strong> with unique 6-digit codes</span>
+            </div>
         </div>
         
         <div class="share-info">
@@ -158,5 +291,141 @@
             {{ request.url_root }}</p>
         </div>
     </div>
+
+    <script>
+        // Create Diwali decorations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create diyas (lamps)
+            for (let i = 0; i < 15; i++) {
+                createDiya();
+            }
+            
+            // Create firecrackers
+            for (let i = 0; i < 10; i++) {
+                createFirecracker();
+            }
+            
+            // Create rockets
+            for (let i = 0; i < 5; i++) {
+                createRocket();
+            }
+        });
+        
+        function createDiya() {
+            const diya = document.createElement('div');
+            diya.className = 'diya';
+            
+            // Random position
+            const left = Math.random() * 100;
+            const top = Math.random() * 100;
+            
+            diya.style.left = `${left}%`;
+            diya.style.top = `${top}%`;
+            
+            document.body.appendChild(diya);
+        }
+        
+        function createFirecracker() {
+            const firecracker = document.createElement('div');
+            firecracker.className = 'firecracker';
+            
+            // Random position
+            const left = Math.random() * 100;
+            
+            firecracker.style.left = `${left}%`;
+            
+            document.body.appendChild(firecracker);
+            
+            // Animate firecracker
+            setTimeout(() => {
+                firecracker.style.transition = 'all 1s';
+                firecracker.style.transform = 'translateY(-100vh)';
+                
+                // Create sparks after explosion
+                setTimeout(() => {
+                    createSparks(left, parseFloat(firecracker.style.bottom) + 100);
+                    document.body.removeChild(firecracker);
+                }, 1000);
+            }, Math.random() * 5000);
+            
+            // Create new firecracker after this one explodes
+            setTimeout(createFirecracker, Math.random() * 10000 + 5000);
+        }
+        
+        function createSparks(x, y) {
+            for (let i = 0; i < 20; i++) {
+                const spark = document.createElement('div');
+                spark.className = 'spark';
+                
+                spark.style.left = `${x}%`;
+                spark.style.top = `${y}%`;
+                
+                // Random direction and distance
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 50 + Math.random() * 100;
+                const targetX = x + Math.cos(angle) * distance;
+                const targetY = y + Math.sin(angle) * distance;
+                
+                document.body.appendChild(spark);
+                
+                // Animate spark
+                spark.style.transition = 'all 1s';
+                spark.style.left = `${targetX}%`;
+                spark.style.top = `${targetY}%`;
+                spark.style.opacity = '0';
+                
+                // Remove spark after animation
+                setTimeout(() => {
+                    if (spark.parentNode) {
+                        document.body.removeChild(spark);
+                    }
+                }, 1000);
+            }
+        }
+        
+        function createRocket() {
+            const rocket = document.createElement('div');
+            rocket.className = 'rocket';
+            
+            // Random position
+            const left = Math.random() * 100;
+            
+            rocket.style.left = `${left}%`;
+            
+            // Rocket body
+            const rocketBody = document.createElement('div');
+            rocketBody.className = 'rocket-body';
+            
+            // Rocket fin
+            const rocketFin = document.createElement('div');
+            rocketFin.className = 'rocket-fin';
+            
+            // Rocket fire
+            const rocketFire = document.createElement('div');
+            rocketFire.className = 'rocket-fire';
+            
+            rocket.appendChild(rocketBody);
+            rocket.appendChild(rocketFin);
+            rocket.appendChild(rocketFire);
+            
+            document.body.appendChild(rocket);
+            
+            // Animate rocket
+            setTimeout(() => {
+                rocket.style.transition = 'all 3s';
+                rocket.style.bottom = '100vh';
+                
+                // Remove rocket after animation
+                setTimeout(() => {
+                    if (rocket.parentNode) {
+                        document.body.removeChild(rocket);
+                    }
+                }, 3000);
+            }, Math.random() * 3000);
+            
+            // Create new rocket after this one launches
+            setTimeout(createRocket, Math.random() * 8000 + 5000);
+        }
+    </script>
 </body>
 </html>
