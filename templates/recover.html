@@ -23,6 +23,15 @@
             width: 100%;
             text-align: center;
         }
+        /* NEW LOGO STYLES */
+        .brand-logo {
+            max-width: 120px;
+            width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
         h1 {
             color: #2c3e50;
             margin-bottom: 10px;
@@ -108,6 +117,9 @@
 </head>
 <body>
     <div class="recover-container">
+        <!-- LOGO ADDED HERE -->
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="TCI Indian Association Logo" class="brand-logo">
+        
         <h1>🔍 Recover Your Ticket</h1>
         <p class="subtitle">Enter your 6-digit ticket code to access your Tambola ticket</p>
         
