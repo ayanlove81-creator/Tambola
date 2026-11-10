@@ -122,7 +122,17 @@
             background: #3498db;
             color: white;
         }
-        
+        <!-- Inside the <style> tag, add: -->
+        .prize-logo {
+            max-width: 100px;
+            width: 100%;
+            height: auto;
+            margin-bottom: 15px;
+            border-radius: 50%;
+            background: white;
+            padding: 5px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
         .btn-success {
             background: #27ae60;
             color: white;
@@ -132,6 +142,7 @@
 <body>
     <div class="container">
         <div class="header">
+             <img src="{{ url_for('static', filename='logo.png') }}" alt="TCI Logo" class="prize-logo">
             <h1>🏆 Tambola Prize Claims</h1>
             <p>First Come First Serve - Real-time Updates</p>
         </div>
