@@ -60,7 +60,17 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
             border-left: 4px solid #667eea;
         }
-        
+        <!-- Inside the <style> tag, add: -->
+        .admin-logo {
+            max-width: 90px;
+            width: 100%;
+            height: auto;
+            margin-bottom: 15px;
+            border-radius: 50%;
+            background: white;
+            padding: 5px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
         .stat-number {
             font-size: 2.5em;
             font-weight: bold;
@@ -410,6 +420,7 @@
 <body>
     <div class="admin-container">
         <div class="admin-header">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="TCI Logo" class="admin-logo">
             <h1>🎯 Tambola Admin Console</h1>
             <p>Manage tickets, approve prizes, and call numbers</p>
         </div>
