@@ -1,8 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>✨🪔HAPPY DIWALI 🪔✨! 
-        ✨TCI Indian community Register for Tambola✨</title>
+    <title>✨🪔HAPPY DIWALI 🪔✨! ✨Indian Assocation of Turks & Caicos Islands Register for Tambola✨</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {
@@ -24,9 +23,19 @@
             width: 100%;
             text-align: center;
         }
+        /* NEW LOGO STYLES */
+        .brand-logo {
+            max-width: 120px;
+            width: 100%;
+            height: auto;
+            margin-bottom: 20px;
+            border-radius: 50%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
         h1 {
             color: #2c3e50;
             margin-bottom: 10px;
+            font-size: 1.5em;
         }
         .subtitle {
             color: #7f8c8d;
@@ -97,9 +106,11 @@
 </head>
 <body>
     <div class="register-container">
-        <h1>🪔HAPPY DIWALI 🪔
-        <br>TCI Indian community Register for Tambola</br></h1>
-        <p class="subtitle">Enter your Fullname to get your unique ticket</p>
+        <!-- LOGO ADDED HERE -->
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="TCI Indian Association Logo" class="brand-logo">
+        
+        <h1>🎫 ✨🪔HAPPY DIWALI 🪔✨! <br>✨IATCI✨</h1>
+        <p class="subtitle">Enter your name to get your unique ticket</p>
         
         {% if error %}
         <div class="error">
@@ -121,7 +132,7 @@
             <ul style="text-align: left; padding-left: 20px;">
                 <li>Only one ticket per device</li>
                 <li>Your ticket will be unique</li>
-               
+                <li>Save/print your ticket for the game</li>
             </ul>
         </div>
         
